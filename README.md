@@ -37,3 +37,14 @@ the result is always a sparse matrix. Avoiding any kind post condition checks.
 
 ###What is a good data representation for a sparse matrix?
 -Methods that could be used to represent the data is compressed sparse row (CSR) and compressed sparse columns (CSC) <br>
+
+###Assume that you have a customer for your sparse matrix package. The customer states that their primary requirements as: for a N x N matrix with m non-zero entries
+	###Storage should be ~O(km), where k << N and m is any arbitrary type defined 	in your design.
+	###Adding the m+1 value into the matrix should have an execution time of ~O(p) 	where the execution time of all method calls in standard Ruby container classes 	is considered to have a unit value and p << m ideally p = 1. In this scenario, 	what is a good data representation for a sparse matrix?
+-A good data representation might be to use CSR or CSC, but keep a record of the dimension of the matrix, that way, it would not lose any information on the matrix
+
+###What exceptions can occur during the processing of sparse matrices? And how should the system handle them?
+- a sparse matrix could potentially break the definition of a sparse matrix after operations such as addition or subtraction. The post conidtion of the operation will detect that the conditions for a sparse matrix has been broken. It will then return the result as a matrix class instead of a sparse matrix class. If the object that is being assigned the result is a sparse matrix it will then check its invariants to determine if they have been broken or not. If they are broken, the invariant method of the sparse matrix will then throw an error indicating that the invariants have been broken.
+
+###What are the important quality characteristics of a sparse matrix package? Reusability? Efficiency? Efficiency of what?
+-
