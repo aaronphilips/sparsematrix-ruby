@@ -32,8 +32,26 @@ partial differentials
 ###Are tri-diagonal matrices important? And should they impact our design and if so how?
 -Yes they are important. They are used to solve linear system of equations. They can be used to solve partial differential equations as well. <br>
 -It impacts the design because if the size is greater than 6, we then know it is a subset of a sparse matrix
--If two tri-diagonal matrices of the same size and are a sprse matrix and are added or subtracted together, 
+-If two tri-diagonal matrices of the same size and are a sprse matrix and are added or subtracted together,
 the result is always a sparse matrix. Avoiding any kind post condition checks.
 
 ###What is a good data representation for a sparse matrix?
 -Methods that could be used to represent the data is compressed sparse row (CSR) and compressed sparse columns (CSC) <br>
+
+### Design Patterns
+
+## Delegate Pattern
+-Using composition to avoid code reuse. Essentially this is incorporating other objects and classes in a class to delegate, in other words pass responsiblility of methods to the other classes.
+
+## Abstract Factory Pattern
+- Essentially keeping modules
+
+## Ruby Delegate
+-
+
+## Ruby Abstract Factory
+-
+
+## Other Design Pattern
+- state design pattern
+- adapter
