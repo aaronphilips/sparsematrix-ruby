@@ -47,4 +47,11 @@ the result is always a sparse matrix. Avoiding any kind post condition checks.
 - a sparse matrix could potentially break the definition of a sparse matrix after operations such as addition or subtraction. The post conidtion of the operation will detect that the conditions for a sparse matrix has been broken. It will then return the result as a matrix class instead of a sparse matrix class. If the object that is being assigned the result is a sparse matrix it will then check its invariants to determine if they have been broken or not. If they are broken, the invariant method of the sparse matrix will then throw an error indicating that the invariants have been broken.
 
 ###What are the important quality characteristics of a sparse matrix package? Reusability? Efficiency? Efficiency of what?
--
+- A sparse matrix package should be reusable as it should be able to be be used in a general matrix class that has a condition that is under a sparse matrix's domain. Or it should be able to be modified to work as a dense matrix or any other matrix types. 
+- The package should be efficient in that it should not take more resources than a simple matrix generally would. Nor should it take more time to run any operation than the simple matrix would.
+- The package should be usable. It shouldn't require a manual on how to use all the functions. It should be logical and consistent on how the functions are used. 
+- The package should be reliable. It shouldn't return any incorrect return values.
+- the package should also be Extendable. It shouldn't be difficult to implement new functions into it that are required yet missing. 
+
+
+
