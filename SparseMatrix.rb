@@ -1,9 +1,9 @@
-require 'Matrix'
+require 'matrix'
 require 'pp'
 require 'test/unit'
 class SparseMatrix
 
-	include Test::Unit::Assertions	
+	include Test::Unit::Assertions
 	@column_for_corresponding_values
 	@total_of_value_per_row
 	@values
@@ -20,7 +20,7 @@ class SparseMatrix
 
 		for i in 0..matrix.column_count-1
 			for j in 0..matrix.row_count-1
-				if matrix[i,j] != 0				
+				if matrix[i,j] != 0
 					@values.push matrix[i,j]
 					counter = counter+1
 					@column_for_corresponding_values.push j
@@ -35,8 +35,8 @@ class SparseMatrix
 
 
 	def invariants()
-		assert_true @values.length <= @dimension[0]*@dimension[1]
-		assert_true @dimension[0]*@dimension[1] >= 1
+		assert(@values.length <= @dimension[0]*@dimension[1]/2,"this is not sparse")
+		assert(@dimension[0]*@dimension[1] >= 1,"not a valid matrix dimension")
 		assert_equal @total_of_value_per_row[-1],@values.length,0
 		for i in @column_for_corresponding_values
 			assert_true i < @dimension[0]
@@ -111,7 +111,7 @@ class SparseMatrix
 
 	def preAddition(m)
 		invariants
-		assert_true m.is_a?(SparseMatrix) 
+		assert_true m.is_a?(SparseMatrix)
 
 	end
 
@@ -146,7 +146,7 @@ class SparseMatrix
 	def preMultiplication()
 		invariants
 	end
-	
+
 	def postMultiplication()
 		invariants
 	end
@@ -221,5 +221,5 @@ class SparseMatrix
 	private :prePower, :postPower
 
 end
-b = SparseMatrix. new(Matrix[ [1,0] , [1,1] ])
+b = SparseMatrix. new(Matrix[ [1,0] , [0,0] ])
 b.invariants
