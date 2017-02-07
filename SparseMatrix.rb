@@ -67,21 +67,27 @@ class SparseMatrix
 		@dimension.inject(:*)
 	end
 
-	def +(m)
-		preAddition(m)
-		postAddition(m)
-	end
+	# def +(m)
+	# 	preAddition(m)
+	# 	postAddition(m)
+	# end
 
-	def -(m)
-		preSubstraction
-		postSubstraction
-	end
+	# def -(m)
+	# 	preSubstraction
+	# 	postSubstraction
+	# end
 
 	def +(other)
-		preScalarAddition(other)
-		copyHash = @valuesHash.dup
-		postScalarAddition(other, copyHash)
+		if other.is_a ? SparseMatrix
+			# do something
+		elsif other.is_a ? Numeric
+			preScalarAddition(other)
+			scalar_addition(other)
+			copyHash = @valuesHash.dup
+			postScalarAddition(other, copyHash)
+		end
 	end
+
 
 	def -(other)
 		preScalarSubstraction(other)
@@ -89,15 +95,15 @@ class SparseMatrix
 		postScalarSubstration(other,copyHash)
 	end
 
-	def *(m)
-		preMultiplication
-		postMultiplication
-	end
+	# def *(m)
+	# 	preMultiplication
+	# 	postMultiplication
+	# end
 
-	def /(m)
-		preDivision
-		postDivision
-	end
+	# def /(m)
+	# 	preDivision
+	# 	postDivision
+	# end
 
 	def *(other)
 		preScalarMultiplication(other)
@@ -185,7 +191,7 @@ class SparseMatrix
 		if other == 0
 			invariants
 		end
-		
+
 	end
 
 	def preMultiplication()
