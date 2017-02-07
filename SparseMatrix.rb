@@ -31,7 +31,7 @@ class SparseMatrix
 		# end
 		# @dimension.push matrix.row_count
 		# @dimension.push matrix.column_count
-		@valuesHash = Hash.new
+		@values_hash = Hash.new
 
 		@dimension=args
 		# for i in args do @dimension.push(i) end
@@ -41,26 +41,21 @@ class SparseMatrix
 	end
 
 	def insert_at(position,value)
-		preInsertAt(position,value)
-		
-		@valuesHash[position] = value
-		
-		postInsertAt(position,value)
-
+		pre_insert_at(position,value)
+		@values_hash[position] = value
+		post_insert_at(position,value)
 	end
 
 	def to_s
-		@valuesHash.each do |key, array|
+		@values_hash.each do |key, array|
 			puts "#{key}---#{array}"
 		end
 	end
 
 	def invariants()
-
-		assert(@valuesHash.length <= size/2,"this is not sparse")
+		assert(@values_hash.length <= size/2,"this is not sparse")
 		assert(size >= 1,"not a valid matrix dimension")
-		assert (self.is_a? SparseMatrix), "It is not a sparse matrix whoops" 
-
+		assert (self.is_a? SparseMatrix), "It is not a sparse matrix whoops"
 	end
 
 	def size()
@@ -77,16 +72,16 @@ class SparseMatrix
 		postSubstraction
 	end
 
-	def +(other)
-		preScalarAddition(other)
-		copyHash = @valuesHash.dup
-		postScalarAddition(other, copyHash)
+	def scalar_addition(other)
+		pre_scalar_addition(other)
+		copy_hash = @values_hash.dup
+		post_scalar_addition(other, copy_hash)
 	end
 
-	def -(other)
-		preScalarSubstraction(other)
-		copyHash = @valuesHash.dup
-		postScalarSubstration(other,copyHash)
+	def scalar_subtraction(other)
+		pre_scalar_subtraction(other)
+		copy_hash = @values_hash.dup
+		post_scalar_subtraction(other,copy_hash)
 	end
 
 	def *(m)
@@ -99,16 +94,16 @@ class SparseMatrix
 		postDivision
 	end
 
-	def *(other)
-		preScalarMultiplication(other)
-		copyHash = @valuesHash.dup
-		postScalarMultiplication(other,copyHash)
+	def scalar_multiplication(other)
+		pre_scalar_multiplication(other)
+		copy_hash = @values_hash.dup
+		post_scalar_multiplication(other,copy_hash)
 	end
 
-	def /(other)
-		preScalarDivision(other)
-		copyHash = @valuesHash.dup
-		postScalarDivision(other,copyHash)
+	def scalar_division(other)
+		pre_scalar_division(other)
+		copy_hash = @values_hash.dup
+		post_scalar_division(other,copy_hash)
 	end
 
 	def det()
@@ -117,10 +112,15 @@ class SparseMatrix
 	end
 
 	def **(other)
-		prePower
-		postPower
+		pre_power
+		post_power
 	end
 
+	def power(other)
+		pre_power(other)
+		copy_hash = @values_hash.dup
+		post_power(other,copy_hash)
+	end
 	def transpose()
 		preTranspose
 		postTranspose
@@ -133,7 +133,7 @@ class SparseMatrix
 
 
 
-	def preInsertAt(position,value)
+	def pre_insert_at(position,value)
 		invariants
 		assert_equal position.length, @dimension.length,"Invalid position."
 		#puts "#{@dimension.length}"
@@ -143,9 +143,9 @@ class SparseMatrix
 		assert(value!=0)
 	end
 
-	def postInsertAt(position,value)
+	def post_insert_at(position,value)
 		invariants
-		assert_equal value,@valuesHash[position],"Invalid"
+		assert_equal value,@values_hash[position],"Invalid"
 
 	end
 
@@ -168,24 +168,37 @@ class SparseMatrix
 		invariants
 	end
 
-	def preScalarSubstraction()
-		invariants
-	end
-
-	def postScalarSubstration()
-		invariants
-	end
-
-	def preScalarAddition(other)
+	def pre_scalar_subtraction()
 		invariants
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def postScalarAddition(other, copyHash)
+	def post_scalar_subtraction()
+		invariants
+		# think it should be try catch
 		if other == 0
 			invariants
+		else
+			# assume Dense matrix returned
+			#check dense matrix is correct
+			#see n_dimensional_array
 		end
-		
+	end
+
+	def pre_scalar_addition(other)
+		invariants
+		assert (other.is_a? Numeric), "Not a number"
+	end
+
+	def post_scalar_addition(other, copy_hash)
+		# think it should be try catch
+		if other == 0
+			invariants
+		else
+			# assume Dense matrix returned
+			#check dense matrix is correct
+		end
+
 	end
 
 	def preMultiplication()
@@ -196,15 +209,15 @@ class SparseMatrix
 		invariants
 	end
 
-	def preScalarMultiplication(other)
+	def pre_scalar_multiplication(other)
 		invariants
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def postScalarMultiplication(other, copyHash)
+	def post_scalar_multiplication(other, copy_hash)
 		invariants
-		@valuesHash.each do |key,value|
-			assert_equal (other*value), copyHash[key], "Did not multiply successfully"
+		@values_hash.each do |key,value|
+			assert_equal (copy_hash[key]*other),value, "Did not multiply successfully"
 		end
 	end
 
@@ -216,16 +229,16 @@ class SparseMatrix
 		invariants
 	end
 
-	def preScalarDivision(other)
+	def pre_scalar_division(other)
 		invariants
 		assert (other.is_a? Numeric), "Not a number"
 		assert (other!=0), "Division by a zero"
 	end
 
-	def postScalarDivision(other, copyHash)
+	def post_scalar_division(other, copy_hash)
 		invariants
-		@valuesHash.each do |key,value|
-			assert_equal (other/value), copyHash[key], "Did not multiply successfully"
+		@values_hash.each do |key,value|
+			assert_equal (copy_hash[key]/other),value, "Did not divide successfully"
 		end
 
 	end
@@ -254,31 +267,43 @@ class SparseMatrix
 		invariants
 	end
 
-	def prePower()
+	def pre_power(other)
 		invariants
+		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def postPower()
-		invariants
+	def post_power(other, copy_hash)
+		if other != 0
+			invariants
+			@values_hash.each do |key,value|
+				assert_equal (copy_hash[key]**other),value, "Did not exponentiate successfully"
+			end
+		else
+			# check that its n_dimensional_array of ones
+		end
+	end
+	# i feel like we need this
+	# and it actually works
+	def n_dimensional_array(dim_array,initial_value)
+		# will use eval function with string like:
+		# Array.new(dim_array[0]) {Array.new(dim_array[1])... {Array.new(dim_array[n], initial_value)}...}
+
 	end
 
 	private :preAddition, :postAddition
-	private :preScalarAddition, :postScalarAddition
+	private :pre_scalar_addition, :post_scalar_addition
 	private :preSubstraction, :postSubstraction
-	private :preScalarSubstraction, :postScalarSubstration
+	private :pre_scalar_subtraction, :post_scalar_subtraction
 	private :preMultiplication, :postMultiplication
-	private :preScalarMultiplication, :postScalarMultiplication
+	private :pre_scalar_multiplication, :post_scalar_multiplication
 	private :preDivision, :postDivision
-	private :preScalarDivision, :postScalarDivision
+	private :pre_scalar_division, :post_scalar_division
 	private :preDeterminant, :postDeterminant
 	private :preInverse, :postInverse
 	private :preTranspose, :postTranspose
-	private :prePower, :postPower
+	private :pre_power, :post_power
 
 end
 b = SparseMatrix. new([2,2])
 b.insert_at([1,1],1)
-
-b/(2)
-
 b.to_s
