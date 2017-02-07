@@ -5,65 +5,34 @@ require 'test/unit'
 class SparseMatrix
 	attr_accessor :dimension, :valuesHash
 	include Test::Unit::Assertions
-	# @column_for_corresponding_values
-	# @total_of_value_per_row
-	# @values
-	# @dimension
 
 	def initialize(args)
-		# @column_for_corresponding_values = Array.new
-		# @total_of_value_per_row = Array.new
-		# @values = Array.new
-		# @dimension = Array.new
-		#
-		# @total_of_value_per_row.push 0
-		# counter = 0
-		#
-		# for i in 0..matrix.column_count-1
-		# 	for j in 0..matrix.row_count-1
-		# 		if matrix[i,j] != 0
-		# 			@values.push matrix[i,j]
-		# 			counter = counter+1
-		# 			@column_for_corresponding_values.push j
-		# 		end
-		# 	end
-		# 	@total_of_value_per_row.push counter
-		# end
-		# @dimension.push matrix.row_count
-		# @dimension.push matrix.column_count
-		@valuesHash = Hash.new
-
+		@values_hash = Hash.new
 		@dimension=args
-		# for i in args do @dimension.push(i) end
-		# puts @dimension
-		# for
+		invariants
 	end
 
 	def insert_at(position,value)
-		preInsertAt(position,value)
-		
-		@valuesHash[position] = value
-		
-		postInsertAt(position,value)
-
+		pre_insert_at(position,value)
+		@values_hash[position] = value
+		post_insert_at(position,value)
 	end
 
 	def to_s
-		@valuesHash.each do |key, array|
+		@values_hash.each do |key, array|
 			puts "#{key}---#{array}"
 		end
 	end
 
 	def invariants()
-		assert(@values.length <= @dimension[0]*@dimension[1]/2,"this is not sparse")
-		assert(@dimension[0]*@dimension[1] >= 1,"not a valid matrix dimension")
-		assert_equal @total_of_value_per_row[-1],@values.length,0
-		for i in @column_for_corresponding_values
-			assert_true i < @dimension[0]
-		end
-
+		assert(@values_hash.length <= size/2,"this is not sparse")
+		assert(size >= 1,"not a valid matrix dimension")
+		assert (self.is_a? SparseMatrix), "It is not a sparse matrix whoops"
 	end
 
+	def size()
+		@dimension.inject(:*)
+	end
 
 	def +(m)
 		preAddition(m)
@@ -96,24 +65,23 @@ class SparseMatrix
 		postDivision
 	end
 
-	def *(other)
-		preScalarMultiplication
-		postScalarMultiplication
-	end
-
-	def /(other)
-		preScalarDivision
-		postScalarDivision
-	end
-
 	def det()
 		preDeterminant
 		postDeterminant
 	end
 
 	def **(other)
-		prePower
-		postPower
+		pre_power
+		post_power
+	end
+
+	def power(other)
+		pre_power(other)
+
+		# stuff
+		retval=SparseMatrix.new(@dimension)
+		# copy_hash = @values_hash.dup
+		post_power(other,retval)
 	end
 
 	def transpose()
@@ -134,18 +102,44 @@ class SparseMatrix
 		return self.valuesHash
 	end
 
-	def preInsertAt(position,value)
+	def scalar_addition(other)
+		pre_scalar_addition(other)
+		copy_hash = @values_hash.dup
+		post_scalar_addition(other, copy_hash)
+	end
+
+	def scalar_subtraction(other)
+		pre_scalar_subtraction(other)
+		copy_hash = @values_hash.dup
+		post_scalar_subtraction(other,copy_hash)
+	end
+
+	def scalar_multiplication(other)
+		pre_scalar_multiplication(other)
+		copy_hash = @values_hash.dup
+		post_scalar_multiplication(other,copy_hash)
+	end
+
+	def scalar_division(other)
+		pre_scalar_division(other)
+		copy_hash = @values_hash.dup
+		post_scalar_division(other,copy_hash)
+	end
+
+	def pre_insert_at(position,value)
+		invariants
 		assert_equal position.length, @dimension.length,"Invalid position."
 		for i in 0..@dimension.length-1 do
-			assert(@dimension[i]>position[i], "Valid")
+			assert(@dimension[i]>position[i], "Invalid")
 		end
 		assert(value!=0)
 	end
 
-	def postInsertAt(position,value)
+	def post_insert_at(position,value)
+		invariants
+		assert_equal value,@values_hash[position],"Invalid"
 
 	end
-
 
 	def preAddition(m)
 		invariants
@@ -155,73 +149,117 @@ class SparseMatrix
 
 	end
 
-	def postAddition(m, result)
+
+	def postAddition(m)
+		invariants
 		assert_equal(self, result - m, 'matrices didnt add correct')
-
-		invariants	
-
 	end
 
-	def preSubtraction()
+    def preSubtraction()
+        invariants
+        assert(m.is_a?(SparseMatrix), 'not subtracting by a sparse matrix')
+        assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
+        assert_equal self.dimension, m.getDimension, "dimension sizes are different"
+    end
+
+    def postSubtraction()
+        invariants
+        assert_equal(self, result + m, 'matrices didnt subtract correct')
+    
+    end
+
+	def pre_scalar_subtraction()
 		invariants
-		assert(m.is_a?(SparseMatrix), 'not subtracting by a sparse matrix')
-		assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
-		assert_equal self.dimension, m.getDimension, "dimension sizes are different"
-
+		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def postSubtraction()
+	def post_scalar_subtraction()
 		invariants
-		assert_equal(self, result + m, 'matrices didnt subtract correct')
-
+		# think it should be try catch
+		if other == 0
+			invariants
+		else
+			# assume Dense matrix returned
+			#check dense matrix is correct
+			#see n_dimensional_array
+		end
 	end
 
-	def preScalarSubstraction()
+	def pre_scalar_addition(other)
 		invariants
+		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def postScalarSubstration()
+	def post_scalar_addition(other, copy_hash)
+		# think it should be try catch
+		if other == 0
+			invariants
+		else
+			# assume Dense matrix returned
+			#check dense matrix is correct
+		end
+
+	end
+
+	def preMultiplication(other)
 		invariants
+		assert (other.is_a? SparseMatrix), "Not a SparseMatrix"
+		assert_equal @dimension.length,2,"n dimensional multiplication not implemented yet"
 	end
 
-	def preScalarAddition()
-		#invariants
-	end
-
-	def postScalarAddition()
-		#invariants
-	end
-
-	def preMultiplication()
+	def postMultiplication(result)
 		invariants
+		result.getValues.each do |key1,value1|
+			sum=0
+			@values_hash.each do |key2,value2|
+				other.getValues do |key3,value3|
+					if key2[0]==key1[0] and key1[1]==key3[1]
+						sum+=(value2+value3)
+					end
+				end
+				assert_equal sum,value1,"did not add correctly"
+			end	
+		end
+
+
+
 	end
 
-	def postMultiplication()
+	def pre_scalar_multiplication(other)
 		invariants
+		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def preScalarMultiplication()
+	def post_scalar_multiplication(other, copy_hash)
 		invariants
-	end
-
-	def postScalarMultiplication()
-		invariants
+		@values_hash.each do |key,value|
+			assert_equal (copy_hash[key]*other),value, "Did not multiply successfully"
+		end
 	end
 
 	def preDivision()
 		invariants
+		assert (other.is_a? SparseMatrix), "Not a SparseMatrix"
+		assert_equal @dimension.length,2,"n dimensional multiplication not implemented yet"
 	end
 
-	def postDivision()
+	def postDivision(result)
 		invariants
+		postMultiplication(inverse(result))
 	end
 
-	def preScalarDivision()
+	def pre_scalar_division(other)
 		invariants
+		assert (other.is_a? Numeric), "Not a number"
+		assert (other!=0), "Division by a zero"
 	end
 
-	def postScalarDivision()
+	def post_scalar_division(other, copy_hash)
 		invariants
+		@values_hash.each do |key,value|
+			assert_equal (copy_hash[key]/other),value, "Did not divide successfully"
+		end
+
 	end
 
 	def preDeterminant()
@@ -237,6 +275,7 @@ class SparseMatrix
 
 		invariants
 	end
+
 
 	def preTranspose()
 		#nothing?
@@ -260,30 +299,48 @@ class SparseMatrix
 		invariants
 	end
 
-	def prePower()
-		#nothing?
+	def pre_power(other)
 		invariants
+		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def postPower(power, result)
-		assert_equal(self.getDimension, result.getDimension, 'dimension are not the same')
-		assert_equal(self, result**(-power), 'power did not work')
+# <<<<<<< HEAD
+# 	def postPower(power, result)
+# 		assert_equal(self.getDimension, result.getDimension, 'dimension are not the same')
+# 		assert_equal(self, result**(-power), 'power did not work')
 
-		invariants
+# 		invariants
+# =======
+	def post_power(other, result)
+		if other != 0
+			invariants
+			@values_hash.each do |key,value|
+				assert_equal (value**other),result[key], "Did not exponentiate successfully"
+			end
+		else
+			# check that its n_dimensional_array of ones
+		end
+	end
+	# i feel like we need this
+	# and it actually works
+	def n_dimensional_array(dim_array,initial_value)
+		# will use eval function with string like:
+		# Array.new(dim_array[0]) {Array.new(dim_array[1])... {Array.new(dim_array[n], initial_value)}...}
+
 	end
 
 	private :preAddition, :postAddition
-	private :preScalarAddition, :postScalarAddition
+	private :pre_scalar_addition, :post_scalar_addition
 	private :preSubstraction, :postSubstraction
-	private :preScalarSubstraction, :postScalarSubstration
+	private :pre_scalar_subtraction, :post_scalar_subtraction
 	private :preMultiplication, :postMultiplication
-	private :preScalarMultiplication, :postScalarMultiplication
+	private :pre_scalar_multiplication, :post_scalar_multiplication
 	private :preDivision, :postDivision
-	private :preScalarDivision, :postScalarDivision
+	private :pre_scalar_division, :post_scalar_division
 	private :preDeterminant, :postDeterminant
 	private :preInverse, :postInverse
 	private :preTranspose, :postTranspose
-	private :prePower, :postPower
+	private :pre_power, :post_power
 
 end
 b = SparseMatrix.new([2,2])
@@ -301,3 +358,4 @@ a.to_s
 puts a.getValues
 c = a+b
 puts 'THE END'
+b.to_s
