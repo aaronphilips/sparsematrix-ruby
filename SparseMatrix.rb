@@ -270,7 +270,7 @@ class SparseMatrix
 	end
 
 	def postDeterminant(result)
-		assert(result.is?Integer, 'result is not an Integer')
+		assert(result.is_a?Integer, 'result is not an Integer')
 		assert_equal(result, (self.transpose).determinant, 'det didnt work')
 
 		invariants
@@ -278,7 +278,7 @@ class SparseMatrix
 
 
 	def preTranspose()
-		#nothing?
+		assert(self.is_a?SparseMatrix, 'trying to use SparseMatrix transpose on a non sparse matrix' )
 		invariants
 	end
 
