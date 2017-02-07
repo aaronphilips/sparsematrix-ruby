@@ -44,7 +44,7 @@ class SparseMatrix
 		
 		@valuesHash[position] = value
 		
-		postInsertAt(position)
+		postInsertAt(position,value)
 
 	end
 
@@ -131,16 +131,13 @@ class SparseMatrix
 		assert_equal position.length, @dimension.length,"Invalid position."
 		puts "#{@dimension.length}"
 		for i in 0..@dimension.length-1 do
-			
-			k=dimension[i]>@position[i] ? "tr":"f"
-			puts "#{k}"
-			#assert(@dimension[i]>@position[i], "Valid")
-		
+			assert(@dimension[i]>position[i], "Valid")
 		end
-
+		assert(value!=0)
 	end
 
-	def postInsertAt(m)
+	def postInsertAt(position,value)
+
 	end
 
 
@@ -257,7 +254,7 @@ class SparseMatrix
 
 end
 b = SparseMatrix. new([2,2])
-b.insert_at([1,1],3)
+b.insert_at([1,1],1)
 b.insert_at([0,0],2)
 b.insert_at([0,1],2)
 b.insert_at([1,0],3)
