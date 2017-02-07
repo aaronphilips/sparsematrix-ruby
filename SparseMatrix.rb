@@ -156,10 +156,9 @@ class SparseMatrix
 	end
 
 	def postAddition(m, result)
-		#result.non_zeros == matrix(self + m).non_zero
-		#matrix(self + m) == result
+		assert_equal(self, result - m, 'matrices didnt add correct')
 
-		#invariants	
+		invariants	
 
 	end
 
@@ -231,7 +230,7 @@ class SparseMatrix
 
 	def postDeterminant(result)
 		assert(result.is?Integer, 'result is not an Integer')
-		#assert_equal(expectedResult, result, 'det didnt work')
+		assert_equal(result, (self.transpose).determinant, 'det didnt work')
 
 		invariants
 	end
@@ -243,7 +242,6 @@ class SparseMatrix
 
 	def postTranspose(result)
 		assert_equal(self.getDimension, result.getDimension.reverse, 'dimensions are not correct')
-		#check if values are correct
 		assert_equal(self, result.transpose, 'transpose not correct')
 		invariants
 	end
@@ -254,8 +252,8 @@ class SparseMatrix
 	end
 
 	def postInverse(result)
-		assert_equal(identityMatrix, self * result)
-		#check if values are correct
+		assert_equal(self.getDimension, result.getDimension, 'dimension are not the same')
+		assert_equal(identityMatrix, self * result, 'inverse did not work')
 		invariants
 	end
 
@@ -264,9 +262,9 @@ class SparseMatrix
 		invariants
 	end
 
-	def postPower(result)
+	def postPower(power, result)
 		assert_equal(self.getDimension, result.getDimension, 'dimension are not the same')
-		#check if values are correct
+		assert_equal(self, result**(-power), 'power did not work')
 
 		invariants
 	end
