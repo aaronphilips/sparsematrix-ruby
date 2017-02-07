@@ -3,7 +3,7 @@ require 'pp'
 require 'test/unit'
 
 class SparseMatrix
-	attr_reader :dimension
+	attr_accessor :dimension, :valuesHash
 	include Test::Unit::Assertions
 	# @column_for_corresponding_values
 	# @total_of_value_per_row
@@ -67,7 +67,8 @@ class SparseMatrix
 
 	def +(m)
 		preAddition(m)
-		postAddition(m)
+		result = []
+		postAddition(m,result)
 	end
 
 	def -(m)
@@ -75,10 +76,10 @@ class SparseMatrix
 		postSubstraction
 	end
 
-	def +(other)
-		preScalarAddition
-		postScalarAddition
-	end
+	# def +(other)
+	# 	preScalarAddition
+	# 	postScalarAddition
+	# end
 
 	def -(other)
 		preScalarSubstraction
@@ -125,11 +126,16 @@ class SparseMatrix
 		postInverse
 	end
 
+	def getDimension
+		return self.dimension
+	end
 
+	def getValues
+		return self.valuesHash
+	end
 
 	def preInsertAt(position,value)
 		assert_equal position.length, @dimension.length,"Invalid position."
-		puts "#{@dimension.length}"
 		for i in 0..@dimension.length-1 do
 			assert(@dimension[i]>position[i], "Valid")
 		end
@@ -142,20 +148,29 @@ class SparseMatrix
 
 
 	def preAddition(m)
-		invariants
-		assert_true m.is_a?(SparseMatrix)
+		#invariants
+		assert(m.is_a?(SparseMatrix), 'not adding by a sparse matrix')
+		assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
+		assert_equal self.dimension, m.getDimension, "dimension sizes are different"
 
 	end
 
-	def postAddition(m)
-		invariants
+	def postAddition(m, result)
+		#result.non_zeros == matrix(self + m).non_zero
+		#matrix(self + m) == result
+
+		#invariants	
+
 	end
 
 	def preSubstraction()
+		#same as preAddition
+
 		invariants
 	end
 
 	def postSubstraction()
+		#same as postSubtraction
 		invariants
 	end
 
@@ -167,13 +182,13 @@ class SparseMatrix
 		invariants
 	end
 
-	def preScalarAddition()
-		invariants
-	end
+	# def preScalarAddition()
+	# 	#invariants
+	# end
 
-	def postScalarAddition()
-		invariants
-	end
+	# def postScalarAddition()
+	# 	#invariants
+	# end
 
 	def preMultiplication()
 		invariants
@@ -208,34 +223,51 @@ class SparseMatrix
 	end
 
 	def preDeterminant()
+		assert_block ('matrix is not square') do
+			self.getDimension.all? {|dimensionSize| dimensionSize == self.getDimension[0]}
+		end
 		invariants
 	end
 
-	def postDeterminant()
+	def postDeterminant(result)
+		assert(result.is?Integer, 'result is not an Integer')
+		#assert_equal(expectedResult, result, 'det didnt work')
+
 		invariants
 	end
 
 	def preTranspose()
+		#nothing?
 		invariants
 	end
 
-	def postTranspose()
+	def postTranspose(result)
+		assert_equal(self.getDimension, result.getDimension.reverse, 'dimensions are not correct')
+		#check if values are correct
+		assert_equal(self, result.transpose, 'transpose not correct')
 		invariants
 	end
 
 	def preInverse()
+		assert(preDeterminant, 'matrix needs to be bale to get determinant')
 		invariants
 	end
 
-	def postInverse()
+	def postInverse(result)
+		assert_equal(identityMatrix, self * result)
+		#check if values are correct
 		invariants
 	end
 
 	def prePower()
+		#nothing?
 		invariants
 	end
 
-	def postPower()
+	def postPower(result)
+		assert_equal(self.getDimension, result.getDimension, 'dimension are not the same')
+		#check if values are correct
+
 		invariants
 	end
 
@@ -253,10 +285,18 @@ class SparseMatrix
 	private :prePower, :postPower
 
 end
-b = SparseMatrix. new([2,2])
+b = SparseMatrix.new([2,2])
 b.insert_at([1,1],1)
 b.insert_at([0,0],2)
 b.insert_at([0,1],2)
 b.insert_at([1,0],3)
-
+a = SparseMatrix.new([2,2])
+a.insert_at([0,0], 2)
+puts 'matrix b'
 b.to_s
+puts b.getValues
+puts 'matrix a'
+a.to_s
+puts a.getValues
+c = a+b
+puts 'THE END'
