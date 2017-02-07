@@ -37,6 +37,7 @@ class SparseMatrix
 		# for i in args do @dimension.push(i) end
 		# puts @dimension
 		# for
+		invariants
 	end
 
 	def insert_at(position,value)
@@ -55,15 +56,16 @@ class SparseMatrix
 	end
 
 	def invariants()
-		assert(@values.length <= @dimension[0]*@dimension[1]/2,"this is not sparse")
-		assert(@dimension[0]*@dimension[1] >= 1,"not a valid matrix dimension")
-		assert_equal @total_of_value_per_row[-1],@values.length,0
-		for i in @column_for_corresponding_values
-			assert_true i < @dimension[0]
-		end
+
+		assert(@valuesHash.length <= size/2,"this is not sparse")
+		assert(size >= 1,"not a valid matrix dimension")
+		assert (self.is_a? SparseMatrix), "It is not a sparse matrix whoops" 
 
 	end
 
+	def size()
+		@dimension.inject(:*)
+	end
 
 	def +(m)
 		preAddition(m)
@@ -76,13 +78,15 @@ class SparseMatrix
 	end
 
 	def +(other)
-		preScalarAddition
-		postScalarAddition
+		preScalarAddition(other)
+		copyHash = @valuesHash.dup
+		postScalarAddition(other, copyHash)
 	end
 
 	def -(other)
-		preScalarSubstraction
-		postScalarSubstration
+		preScalarSubstraction(other)
+		copyHash = @valuesHash.dup
+		postScalarSubstration(other,copyHash)
 	end
 
 	def *(m)
@@ -96,13 +100,15 @@ class SparseMatrix
 	end
 
 	def *(other)
-		preScalarMultiplication
-		postScalarMultiplication
+		preScalarMultiplication(other)
+		copyHash = @valuesHash.dup
+		postScalarMultiplication(other,copyHash)
 	end
 
 	def /(other)
-		preScalarDivision
-		postScalarDivision
+		preScalarDivision(other)
+		copyHash = @valuesHash.dup
+		postScalarDivision(other,copyHash)
 	end
 
 	def det()
@@ -128,15 +134,18 @@ class SparseMatrix
 
 
 	def preInsertAt(position,value)
+		invariants
 		assert_equal position.length, @dimension.length,"Invalid position."
-		puts "#{@dimension.length}"
+		#puts "#{@dimension.length}"
 		for i in 0..@dimension.length-1 do
-			assert(@dimension[i]>position[i], "Valid")
+			assert(@dimension[i]>position[i], "Invalid")
 		end
 		assert(value!=0)
 	end
 
 	def postInsertAt(position,value)
+		invariants
+		assert_equal value,@valuesHash[position],"Invalid"
 
 	end
 
@@ -167,12 +176,16 @@ class SparseMatrix
 		invariants
 	end
 
-	def preScalarAddition()
+	def preScalarAddition(other)
 		invariants
+		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def postScalarAddition()
-		invariants
+	def postScalarAddition(other, copyHash)
+		if other == 0
+			invariants
+		end
+		
 	end
 
 	def preMultiplication()
@@ -183,12 +196,16 @@ class SparseMatrix
 		invariants
 	end
 
-	def preScalarMultiplication()
+	def preScalarMultiplication(other)
 		invariants
+		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def postScalarMultiplication()
+	def postScalarMultiplication(other, copyHash)
 		invariants
+		@valuesHash.each do |key,value|
+			assert_equal (other*value), copyHash[key], "Did not multiply successfully"
+		end
 	end
 
 	def preDivision()
@@ -199,12 +216,18 @@ class SparseMatrix
 		invariants
 	end
 
-	def preScalarDivision()
+	def preScalarDivision(other)
 		invariants
+		assert (other.is_a? Numeric), "Not a number"
+		assert (other!=0), "Division by a zero"
 	end
 
-	def postScalarDivision()
+	def postScalarDivision(other, copyHash)
 		invariants
+		@valuesHash.each do |key,value|
+			assert_equal (other/value), copyHash[key], "Did not multiply successfully"
+		end
+
 	end
 
 	def preDeterminant()
@@ -255,8 +278,7 @@ class SparseMatrix
 end
 b = SparseMatrix. new([2,2])
 b.insert_at([1,1],1)
-b.insert_at([0,0],2)
-b.insert_at([0,1],2)
-b.insert_at([1,0],3)
+
+b/(2)
 
 b.to_s
