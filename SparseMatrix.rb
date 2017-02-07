@@ -66,8 +66,11 @@ class SparseMatrix
 
 	def power(other)
 		pre_power(other)
-		copy_hash = @values_hash.dup
-		post_power(other,copy_hash)
+
+		# stuff
+		retval=SparseMatrix.new(@dimension)
+		# copy_hash = @values_hash.dup
+		post_power(other,retval)
 	end
 
 	def transpose()
@@ -188,12 +191,28 @@ class SparseMatrix
 
 	end
 
-	def preMultiplication()
+	def preMultiplication(other)
 		invariants
+		assert (other.is_a? SparseMatrix), "Not a SparseMatrix"
+		assert_equal @dimension.length,2,"n dimensional multiplication not implemented yet"
 	end
 
-	def postMultiplication()
+	def postMultiplication(result)
 		invariants
+		result.getValues.each do |key1,value1|
+			sum=0
+			@values_hash.each do |key2,value2|
+				other.getValues do |key3,value3|
+					if key2[0]==key1[0] and key1[1]==key3[1]
+						sum+=(value2+value3)
+					end
+				end
+				assert_equal sum,value1,"did not add correctly"
+			end	
+		end
+
+
+
 	end
 
 	def pre_scalar_multiplication(other)
@@ -210,10 +229,13 @@ class SparseMatrix
 
 	def preDivision()
 		invariants
+		assert (other.is_a? SparseMatrix), "Not a SparseMatrix"
+		assert_equal @dimension.length,2,"n dimensional multiplication not implemented yet"
 	end
 
-	def postDivision()
+	def postDivision(result)
 		invariants
+		postMultiplication(inverse(result))
 	end
 
 	def pre_scalar_division(other)
@@ -272,11 +294,11 @@ class SparseMatrix
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def post_power(other, copy_hash)
+	def post_power(other, result)
 		if other != 0
 			invariants
 			@values_hash.each do |key,value|
-				assert_equal (copy_hash[key]**other),value, "Did not exponentiate successfully"
+				assert_equal (value**other),result[key], "Did not exponentiate successfully"
 			end
 		else
 			# check that its n_dimensional_array of ones
