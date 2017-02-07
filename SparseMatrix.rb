@@ -6,18 +6,21 @@ class SparseMatrix
 	attr_accessor :dimension, :valuesHash
 	include Test::Unit::Assertions
 
+	# initialize the SparseMatrix
 	def initialize(args)
 		@values_hash = Hash.new
 		@dimension=args
 		invariants
 	end
 
+	# Insert values into matrix
 	def insert_at(position,value)
 		pre_insert_at(position,value)
 		@values_hash[position] = value
 		post_insert_at(position,value)
 	end
 
+	# 
 	def to_s
 		@values_hash.each do |key, array|
 			puts "#{key}---#{array}"
@@ -29,9 +32,9 @@ class SparseMatrix
 		assert(size >= 1,"not a valid matrix dimension")
 		assert (self.is_a? SparseMatrix), "It is not a sparse matrix whoops"
 	end
-
+    #returns the size  
 	def size()
-		@dimension.inject(:*)
+		return @dimension.inject(:*)
 	end
 
 	# FOR LATERRRR ################
@@ -51,8 +54,8 @@ class SparseMatrix
 	# end
 
 	# def /(m)
-	# 	preDivision
-	# 	postDivision
+	# 	pre_sparse_matrix_division
+	# 	post_sparse_matrix_division
 	# end
 
 	# def det()
@@ -65,12 +68,14 @@ class SparseMatrix
 	# 	post_power
 	# end
 
+	# raises every element in the matrix to numbers power
 	def power(other)
 		pre_power(other)
 		# stuff
 		retval=SparseMatrix.new(@dimension)
 		post_power(other,retval)
 	end
+
 
 	def transpose()
 		preTranspose
@@ -114,6 +119,8 @@ class SparseMatrix
 		post_scalar_division(other,retval)
 	end
 
+	# to insert a value in a sparse matrix we have to ensure the position is valid for that matrix's dimension
+	# we also cannot insert zeros as they are implied to be there.
 	def pre_insert_at(position,value)
 		invariants
 		assert_equal position.length, @dimension.length,"Invalid position."
@@ -123,19 +130,21 @@ class SparseMatrix
 		assert (value!=0), "Inserting a zero"
 	end
 
+	# ensures that the value is inserted to the matrix
 	def post_insert_at(position,value)
 		invariants
 		assert_equal value,@values_hash[position],"Value is not inserted. FAILED."
 	end
 
+	# ensures that the the value added is a spare matrix and dimensions of the two matrices are the same
 	def pre_sparse_matrix_addition(other)
 		invariants
 		assert(other.is_a?(SparseMatrix), 'not adding by a sparse matrix')
 		# assert_equal self.dimension.length, other.getDimension.length, "matrices need to be same dimension"
 		assert_equal self.dimension, other.getDimension, "dimension sizes are different"
-
 	end
 
+	# ensures that that the sparse matrix is added correctly
 	def post_sparse_matrix_addition(other,result)
 		invariants
 		result.getValues.each do |key1,value1|
@@ -143,32 +152,36 @@ class SparseMatrix
 		end
 	end
 
-    def pre_sparse_matrix_subtraction()
+	# ensures that the value taken in is a sparse matrix and the dimensions of the two matrices are the same
+    def pre_sparse_matrix_subtraction(m)
         invariants
         assert(m.is_a?(SparseMatrix), 'not subtracting by a sparse matrix')
         # assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
         assert_equal self.dimension, m.getDimension, "dimension sizes are different"
     end
 
-    def post_sparse_matrix_subtraction()
+    # ensures that the sparse matrix is subtracted correctly
+    def post_sparse_matrix_subtraction(other,result)
         invariants
         result.getValues.each do |key1,value1|
 			assert_equal (@values_hash[key1]-other[key1]),value1,"Did not subtract SparseMatrix correctly"
 		end
-    
+    	
     end
 
-
-	def pre_scalar_subtraction()
+    # ensures that the value inputted is a a Numeric
+	def pre_scalar_subtraction(other)
 		invariants
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
+	# ensures that the scalar subtraction is correct. Also makes sure that if the value to be substracted
+	# is zero, then the result matrix is the same as the original matrix
 	def post_scalar_subtraction(other,result)
 		invariants
 		# think it should be try catch
 		if other == 0
-			invariants
+			assert_equal self, result, "Not the same matrix"
 		else
 			@values_hash.each do |key,value|
 				retval=eval("result"+key.to_s.gsub(",","]["))
@@ -180,16 +193,18 @@ class SparseMatrix
 		end
 	end
 
+	# ensures that the value inputted is a Numeric value
 	def pre_scalar_addition(other)
 		invariants
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def post_scalar_addition(other, retval)
+	# ensures that the scalar addition is correct. If the value is zero then the matrix should be the same
+	def post_scalar_addition(other,result)
 		# think it should be try catch
+		invariants
 		if other == 0
-			invariants
-
+			assert_equal self, result, "Not the same matrix"
 		else
 			@values_hash.each do |key,value|
 				retval=eval("result"+key.to_s.gsub(",","]["))
@@ -201,14 +216,15 @@ class SparseMatrix
 
 	end
 
-	def pre_sparse_matrix_multiplication
-(other)
+	# ensures that the value inputted is a sparse matrix and the dimensions is 2 (for now)
+	def pre_sparse_matrix_multiplication(other)
 		invariants
 		assert (other.is_a? SparseMatrix), "Not a SparseMatrix"
 		assert_equal @dimension.length,2,"n dimensional multiplication not implemented yet"
 	end
 
-	def post_sparse_matrix_multiplication(result)
+	# ensures that the multiplication of a sparse matrix is multiplied correctly
+	def post_sparse_matrix_multiplication(other,result)
 		invariants
 		result.getValues.each do |key1,value1|
 			sum=0
@@ -223,11 +239,13 @@ class SparseMatrix
 		end
 	end
 
+	# ensures that the value inputted is a numeric
 	def pre_scalar_multiplication(other)
 		invariants
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
+	# ensures that the multiplication of a scalar is correct and is always a sparse matrix
 	def post_scalar_multiplication(other, retval)
 		invariants
 		@values_hash.each do |key,value|
@@ -235,23 +253,27 @@ class SparseMatrix
 		end
 	end
 
-	def preDivision()
+	# ensures that the value inputted is a sparse matrix
+	def pre_sparse_matrix_division(other)
 		invariants
 		assert (other.is_a? SparseMatrix), "Not a SparseMatrix"
 		assert_equal @dimension.length,2,"n dimensional multiplication not implemented yet"
 	end
 
-	def postDivision(result)
+	# ensures that the division of the matrix is implemented correctly by taking the inverse of the matrix
+	def post_sparse_matrix_division(result)
 		invariants
 		post_sparse_matrix_multiplication(inverse(result))
 	end
 
+	# ensures that the number inputted is a numeric
 	def pre_scalar_division(other)
 		invariants
 		assert (other.is_a? Numeric), "Not a number"
 		assert (other!=0), "Division by a zero"
 	end
 
+	# ensures that the division of the scalar is done successfully
 	def post_scalar_division(other, retval)
 		invariants
 		@values_hash.each do |key,value|
@@ -260,6 +282,7 @@ class SparseMatrix
 
 	end
 
+	# checks the preconditions of the determinant.
 	def preDeterminant()
 		assert_block ('matrix is not square') do
 			self.getDimension.all? {|dimensionSize| dimensionSize == self.getDimension[0]}
@@ -267,6 +290,7 @@ class SparseMatrix
 		invariants
 	end
 
+	# ensures that the determinant is correct by taking the transpose
 	def postDeterminant(result)
 		assert(result.is?Integer, 'result is not an Integer')
 		assert_equal(result, (self.transpose).determinant, 'det didnt work')
@@ -274,34 +298,39 @@ class SparseMatrix
 		invariants
 	end
 
-
+	# ensures that it is a sparse matrix
 	def preTranspose()
 		#nothing?
 		invariants
 	end
 
+	# ensures that the result of the transpose is correct by retransposing it 
 	def postTranspose(result)
 		assert_equal(self.getDimension, result.getDimension.reverse, 'dimensions are not correct')
 		assert_equal(self, result.transpose, 'transpose not correct')
 		invariants
 	end
 
+	# ensures that the matrix is a sparse matrix
 	def preInverse()
 		assert(preDeterminant, 'matrix needs to be bale to get determinant')
 		invariants
 	end
 
+	# ensures that the inverse is done correctly
 	def postInverse(result)
 		assert_equal(self.getDimension, result.getDimension, 'dimension are not the same')
 		assert_equal(identityMatrix, self * result, 'inverse did not work')
 		invariants
 	end
 
+	# ensures that it is a sparse matrix
 	def pre_power(other)
 		invariants
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
+	# ensures that the result of the power operator is correct
 	def post_power(other, result)
 		if other != 0
 			invariants
@@ -326,7 +355,7 @@ class SparseMatrix
 	private :pre_scalar_subtraction, :post_scalar_subtraction
 	private :pre_sparse_matrix_multiplication, :post_sparse_matrix_multiplication
 	private :pre_scalar_multiplication, :post_scalar_multiplication
-	private :preDivision, :postDivision
+	private :pre_sparse_matrix_division, :post_sparse_matrix_division
 	private :pre_scalar_division, :post_scalar_division
 	private :preDeterminant, :postDeterminant
 	private :preInverse, :postInverse
