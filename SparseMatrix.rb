@@ -4,33 +4,38 @@ require 'test/unit'
 class SparseMatrix
 
 	include Test::Unit::Assertions
-	@column_for_corresponding_values
-	@total_of_value_per_row
-	@values
-	@dimension
+	# @column_for_corresponding_values
+	# @total_of_value_per_row
+	# @values
+	# @dimension
 
-	def initialize(matrix)
-		@column_for_corresponding_values = Array.new
-		@total_of_value_per_row = Array.new
-		@values = Array.new
-		@dimension = Array.new
-
-		@total_of_value_per_row.push 0
-		counter = 0
-
-		for i in 0..matrix.column_count-1
-			for j in 0..matrix.row_count-1
-				if matrix[i,j] != 0
-					@values.push matrix[i,j]
-					counter = counter+1
-					@column_for_corresponding_values.push j
-				end
-			end
-			@total_of_value_per_row.push counter
-		end
-		@dimension.push matrix.row_count
-		@dimension.push matrix.column_count
+	def initialize(*args)
+		# @column_for_corresponding_values = Array.new
+		# @total_of_value_per_row = Array.new
+		# @values = Array.new
+		# @dimension = Array.new
+		#
+		# @total_of_value_per_row.push 0
+		# counter = 0
+		#
+		# for i in 0..matrix.column_count-1
+		# 	for j in 0..matrix.row_count-1
+		# 		if matrix[i,j] != 0
+		# 			@values.push matrix[i,j]
+		# 			counter = counter+1
+		# 			@column_for_corresponding_values.push j
+		# 		end
+		# 	end
+		# 	@total_of_value_per_row.push counter
+		# end
+		# @dimension.push matrix.row_count
+		# @dimension.push matrix.column_count
+		@dimension=[*args]
+		# puts @dimension
+		# for
 	end
+
+	def insert_at(:position)
 
 
 
@@ -221,5 +226,4 @@ class SparseMatrix
 	private :prePower, :postPower
 
 end
-b = SparseMatrix. new(Matrix[ [1,0] , [0,0] ])
-b.invariants
+b = SparseMatrix. new(1,2,3)
