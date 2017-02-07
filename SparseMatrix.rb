@@ -34,42 +34,41 @@ class SparseMatrix
 		@dimension.inject(:*)
 	end
 
-	def +(m)
-		preAddition(m)
-		postAddition(m)
-	end
+	# FOR LATERRRR ################
+	# def +(m)
+	# 	pre_sparse_matrix_addition(m)
+	# 	post_sparse_matrix_addition(m)
+	# end
 
-	def -(m)
-		preSubstraction
-		postSubstraction
-	end
+	# def -(m)
+	# 	pre_sparse_matrix_subtraction
+	# 	post_sparse_matrix_subtraction
+	# end
 
-	def *(m)
-		preMultiplication
-		postMultiplication
-	end
+	# def *(m)
+	# 	pre_sparse_matrix_multiplication
+	# 	post_sparse_matrix_multiplication
+	# end
 
-	def /(m)
-		preDivision
-		postDivision
-	end
+	# def /(m)
+	# 	preDivision
+	# 	postDivision
+	# end
 
-	def det()
-		preDeterminant
-		postDeterminant
-	end
+	# def det()
+	# 	preDeterminant
+	# 	postDeterminant
+	# end
 
-	def **(other)
-		pre_power
-		post_power
-	end
+	# def **(other)
+	# 	pre_power
+	# 	post_power
+	# end
 
 	def power(other)
 		pre_power(other)
-
 		# stuff
 		retval=SparseMatrix.new(@dimension)
-		# copy_hash = @values_hash.dup
 		post_power(other,retval)
 	end
 
@@ -93,67 +92,69 @@ class SparseMatrix
 
 	def scalar_addition(other)
 		pre_scalar_addition(other)
-		copy_hash = @values_hash.dup
-		post_scalar_addition(other, copy_hash)
+		retval = SparseMatrix.new(@dimension)
+		post_scalar_addition(other, retval)
 	end
 
 	def scalar_subtraction(other)
 		pre_scalar_subtraction(other)
-		copy_hash = @values_hash.dup
-		post_scalar_subtraction(other,copy_hash)
+		retval = SparseMatrix.new(@dimension)
+		post_scalar_subtraction(other,retval)
 	end
 
 	def scalar_multiplication(other)
 		pre_scalar_multiplication(other)
-		copy_hash = @values_hash.dup
-		post_scalar_multiplication(other,copy_hash)
+		retval = SparseMatrix.new(@dimension)
+		post_scalar_multiplication(other,retval)
 	end
 
 	def scalar_division(other)
 		pre_scalar_division(other)
-		copy_hash = @values_hash.dup
-		post_scalar_division(other,copy_hash)
+		retval = SparseMatrix.new(@dimension)
+		post_scalar_division(other,retval)
 	end
 
 	def pre_insert_at(position,value)
 		invariants
 		assert_equal position.length, @dimension.length,"Invalid position."
-		#puts "#{@dimension.length}"
 		for i in 0..@dimension.length-1 do
-			assert(@dimension[i]>position[i], "Invalid")
+			assert(@dimension[i]>position[i], "Invalid position in matrix")
 		end
-		assert(value!=0)
+		assert (value!=0), "Inserting a zero"
 	end
 
 	def post_insert_at(position,value)
 		invariants
-		assert_equal value,@values_hash[position],"Invalid"
-
+		assert_equal value,@values_hash[position],"Value is not inserted. FAILED."
 	end
 
-	def preAddition(m)
+	def pre_sparse_matrix_addition(other)
 		invariants
-		assert(m.is_a?(SparseMatrix), 'not adding by a sparse matrix')
-		assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
-		assert_equal self.dimension, m.getDimension, "dimension sizes are different"
+		assert(other.is_a?(SparseMatrix), 'not adding by a sparse matrix')
+		# assert_equal self.dimension.length, other.getDimension.length, "matrices need to be same dimension"
+		assert_equal self.dimension, other.getDimension, "dimension sizes are different"
 
 	end
 
-	def postAddition(m)
+	def post_sparse_matrix_addition(other,result)
 		invariants
-		assert_equal(self, result - m, 'matrices didnt add correct')
+		result.getValues.each do |key1,value1|
+			assert_equal (@values_hash[key1]+other[key1]),value1,"Did not add SparseMatrix correctly"
+		end
 	end
 
-    def preSubtraction()
+    def pre_sparse_matrix_subtraction()
         invariants
         assert(m.is_a?(SparseMatrix), 'not subtracting by a sparse matrix')
-        assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
+        # assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
         assert_equal self.dimension, m.getDimension, "dimension sizes are different"
     end
 
-    def postSubtraction()
+    def post_sparse_matrix_subtraction()
         invariants
-        assert_equal(self, result + m, 'matrices didnt subtract correct')
+        result.getValues.each do |key1,value1|
+			assert_equal (@values_hash[key1]-other[key1]),value1,"Did not subtract SparseMatrix correctly"
+		end
     
     end
 
@@ -163,12 +164,16 @@ class SparseMatrix
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def post_scalar_subtraction()
+	def post_scalar_subtraction(other,result)
 		invariants
 		# think it should be try catch
 		if other == 0
 			invariants
 		else
+			@values_hash.each do |key,value|
+				retval=eval("result"+key.to_s.gsub(",","]["))
+				assert_equal (value-other),retval, "Did not substract successfully"
+			end
 			# assume Dense matrix returned
 			#check dense matrix is correct
 			#see n_dimensional_array
@@ -180,24 +185,30 @@ class SparseMatrix
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def post_scalar_addition(other, copy_hash)
+	def post_scalar_addition(other, retval)
 		# think it should be try catch
 		if other == 0
 			invariants
+
 		else
+			@values_hash.each do |key,value|
+				retval=eval("result"+key.to_s.gsub(",","]["))
+				assert_equal (value+other),retval, "Did not add successfully"
+			end
 			# assume Dense matrix returned
 			#check dense matrix is correct
 		end
 
 	end
 
-	def preMultiplication(other)
+	def pre_sparse_matrix_multiplication
+(other)
 		invariants
 		assert (other.is_a? SparseMatrix), "Not a SparseMatrix"
 		assert_equal @dimension.length,2,"n dimensional multiplication not implemented yet"
 	end
 
-	def postMultiplication(result)
+	def post_sparse_matrix_multiplication(result)
 		invariants
 		result.getValues.each do |key1,value1|
 			sum=0
@@ -210,9 +221,6 @@ class SparseMatrix
 				assert_equal sum,value1,"did not add correctly"
 			end	
 		end
-
-
-
 	end
 
 	def pre_scalar_multiplication(other)
@@ -220,10 +228,10 @@ class SparseMatrix
 		assert (other.is_a? Numeric), "Not a number"
 	end
 
-	def post_scalar_multiplication(other, copy_hash)
+	def post_scalar_multiplication(other, retval)
 		invariants
 		@values_hash.each do |key,value|
-			assert_equal (copy_hash[key]*other),value, "Did not multiply successfully"
+			assert_equal (value*other),retval[key], "Did not multiply successfully"
 		end
 	end
 
@@ -235,7 +243,7 @@ class SparseMatrix
 
 	def postDivision(result)
 		invariants
-		postMultiplication(inverse(result))
+		post_sparse_matrix_multiplication(inverse(result))
 	end
 
 	def pre_scalar_division(other)
@@ -244,10 +252,10 @@ class SparseMatrix
 		assert (other!=0), "Division by a zero"
 	end
 
-	def post_scalar_division(other, copy_hash)
+	def post_scalar_division(other, retval)
 		invariants
 		@values_hash.each do |key,value|
-			assert_equal (copy_hash[key]/other),value, "Did not divide successfully"
+			assert_equal (value*other),retval[key], "Did not divide successfully"
 		end
 
 	end
@@ -312,11 +320,11 @@ class SparseMatrix
 
 	end
 
-	private :preAddition, :postAddition
+	private :pre_sparse_matrix_addition, :post_sparse_matrix_addition
 	private :pre_scalar_addition, :post_scalar_addition
-	private :preSubstraction, :postSubstraction
+	private :pre_sparse_matrix_subtraction, :post_sparse_matrix_subtraction
 	private :pre_scalar_subtraction, :post_scalar_subtraction
-	private :preMultiplication, :postMultiplication
+	private :pre_sparse_matrix_multiplication, :post_sparse_matrix_multiplication
 	private :pre_scalar_multiplication, :post_scalar_multiplication
 	private :preDivision, :postDivision
 	private :pre_scalar_division, :post_scalar_division
