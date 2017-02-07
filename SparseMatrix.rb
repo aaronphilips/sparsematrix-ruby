@@ -148,7 +148,7 @@ class SparseMatrix
 
 
 	def preAddition(m)
-		#invariants
+		invariants
 		assert(m.is_a?(SparseMatrix), 'not adding by a sparse matrix')
 		assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
 		assert_equal self.dimension, m.getDimension, "dimension sizes are different"
@@ -162,15 +162,18 @@ class SparseMatrix
 
 	end
 
-	def preSubstraction()
-		#same as preAddition
-
+	def preSubtraction()
 		invariants
+		assert(m.is_a?(SparseMatrix), 'not subtracting by a sparse matrix')
+		assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
+		assert_equal self.dimension, m.getDimension, "dimension sizes are different"
+
 	end
 
-	def postSubstraction()
-		#same as postSubtraction
+	def postSubtraction()
 		invariants
+		assert_equal(self, result + m, 'matrices didnt subtract correct')
+
 	end
 
 	def preScalarSubstraction()
@@ -181,13 +184,13 @@ class SparseMatrix
 		invariants
 	end
 
-	# def preScalarAddition()
-	# 	#invariants
-	# end
+	def preScalarAddition()
+		#invariants
+	end
 
-	# def postScalarAddition()
-	# 	#invariants
-	# end
+	def postScalarAddition()
+		#invariants
+	end
 
 	def preMultiplication()
 		invariants
