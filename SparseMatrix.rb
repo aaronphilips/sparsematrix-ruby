@@ -1,15 +1,16 @@
 require 'matrix'
 require 'pp'
 require 'test/unit'
-class SparseMatrix
 
+class SparseMatrix
+	attr_reader :dimension
 	include Test::Unit::Assertions
 	# @column_for_corresponding_values
 	# @total_of_value_per_row
 	# @values
 	# @dimension
 
-	def initialize(*args)
+	def initialize(args)
 		# @column_for_corresponding_values = Array.new
 		# @total_of_value_per_row = Array.new
 		# @values = Array.new
@@ -30,14 +31,28 @@ class SparseMatrix
 		# end
 		# @dimension.push matrix.row_count
 		# @dimension.push matrix.column_count
-		@dimension=[*args]
+		@valuesHash = Hash.new
+
+		@dimension=args
+		# for i in args do @dimension.push(i) end
 		# puts @dimension
 		# for
 	end
 
-	def insert_at(:position)
+	def insert_at(position,value)
+		preInsertAt(position,value)
+		
+		@valuesHash[position] = value
+		
+		postInsertAt(position)
 
+	end
 
+	def to_s
+		@valuesHash.each do |key, array|
+			puts "#{key}---#{array}"
+		end
+	end
 
 	def invariants()
 		assert(@values.length <= @dimension[0]*@dimension[1]/2,"this is not sparse")
@@ -112,6 +127,21 @@ class SparseMatrix
 
 
 
+	def preInsertAt(position,value)
+		assert_equal position.length, @dimension.length,"Invalid position."
+		puts "#{@dimension.length}"
+		for i in 0..@dimension.length-1 do
+			
+			k=dimension[i]>@position[i] ? "tr":"f"
+			puts "#{k}"
+			#assert(@dimension[i]>@position[i], "Valid")
+		
+		end
+
+	end
+
+	def postInsertAt(m)
+	end
 
 
 	def preAddition(m)
@@ -226,4 +256,10 @@ class SparseMatrix
 	private :prePower, :postPower
 
 end
-b = SparseMatrix. new(1,2,3)
+b = SparseMatrix. new([2,2])
+b.insert_at([1,1],3)
+b.insert_at([0,0],2)
+b.insert_at([0,1],2)
+b.insert_at([1,0],3)
+
+b.to_s
