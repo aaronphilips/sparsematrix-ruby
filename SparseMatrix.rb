@@ -45,10 +45,10 @@ class SparseMatrix
 		postSubstraction
 	end
 
-	# def +(other)
-	# 	preScalarAddition
-	# 	postScalarAddition
-	# end
+	def +(other)
+		preScalarAddition
+		postScalarAddition
+	end
 
 	def -(other)
 		preScalarSubstraction
