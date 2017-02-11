@@ -289,7 +289,7 @@ class SparseMatrix
 	end
 
 	def preInverse()
-		assert(preDeterminant, 'matrix needs to be bale to get determinant')
+		assert(preDeterminant, 'matrix needs to be able to get determinant')
 		invariants
 	end
 
