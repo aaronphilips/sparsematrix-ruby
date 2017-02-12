@@ -3,6 +3,7 @@ require 'pp'
 require 'test/unit'
 require_relative 'DenseMatrix'
 require_relative 'SparseMatrixPrePost'
+require_relative 'NDimensionalMatrix'
 
 class SparseMatrix
 	attr_accessor :dimension, :values_hash
@@ -10,23 +11,20 @@ class SparseMatrix
 
 	# initialize the SparseMatrix
 	def initialize(*args)
-		# *rest_of_args,input_hash=*args
-		# init_Hash(*rest_of_args,input_hash)
 		begin
 			*rest_of_args,input_hash=*args
 			init_Hash(*rest_of_args,input_hash)
 		rescue
 			init_dim *args
 		end
-
 	end
 
 	def init_Hash(*rest_of_args,input_hash)
 
 		# should be in a pre and post
-			assert_respond_to(input_hash, :[])
+			# assert_respond_to(input_hash, :[])
 			assert_respond_to(input_hash, :length)
-
+			assert_respond_to(input_hash, :hash)
 			rest_of_args.each do |arg|
 
 				assert_respond_to(arg,:to_i)

@@ -2,15 +2,60 @@ require 'matrix'
 require 'pp'
 require 'test/unit'
 
-class DenseMatrix
+class NDimensionalMatrix
 	attr_accessor :dimension, :values_hash
 	include Test::Unit::Assertions
 
-	# initialize the SparseMatrix
+
+
 	def initialize(*args)
-		@values_hash = Hash.new
-		@dimension=*args
-		invariants
+		begin
+			*rest_of_args,input_hash=*args
+			init_Hash(*rest_of_args,input_hash)
+		rescue
+			init_dim_val *args
+		end
+	end
+
+
+	# initialize the SparseMatrix
+	def init_dim_val(*args)
+		*rest, value= args
+		@arr=recursive_nest_array(*rest,value)
+
+	end
+
+
+	def init_Hash(*rest_of_args,input_hash)
+
+		# should be in a pre and post
+			# assert_respond_to(input_hash, :[])
+			assert_respond_to(input_hash, :length)
+			assert_respond_to(input_hash, :hash)
+			rest_of_args.each do |arg|
+
+				assert_respond_to(arg,:to_i)
+			end
+			# 2d for now
+			init_dim_val(*rest_of_args,0)
+			input_hash.each do |key, value|
+				@arr[key[0]][key[1]]=value
+
+			end
+			@values_hash=input_hash
+			@dimension=*rest_of_args
+	end
+
+
+
+
+
+
+
+
+	def recursive_nest_array(*args,value)
+		arg1,*rest = args
+		Array.new(arg1){rest.empty? ? value: recursive_nest_array(*rest,value)}
 	end
 
 	# Insert values into matrix
@@ -78,4 +123,30 @@ class DenseMatrix
 		assert sum.respond_to? (:round)
 		invariants
 	end
+
+	def to_s
+		@arr.inspect
+	end
+	def get_2d_matrix
+		Matrix[*@arr]
+	end
+	def printMatrix
+		puts get_2d_matrix.to_a.map(&:inspect)
+	end
 end
+
+# NDimensionalMatrix.new 1
+
+n = Hash.new
+n[[2,1]]=4
+n[[1,1]]=2
+n[[0,0]]=1
+
+
+b=NDimensionalMatrix.new(3,3,n)
+c=NDimensionalMatrix.new(3,3,"hi")
+puts b
+puts c
+# m= b.get_2d_matrix
+# puts m.to_a.map(&:inspect)
+b.printMatrix
