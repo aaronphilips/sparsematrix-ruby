@@ -9,6 +9,35 @@ class SparseMatrix
 
 	# initialize the SparseMatrix
 	def initialize(*args)
+		# *rest_of_args,input_hash=*args
+		# init_Hash(*rest_of_args,input_hash)
+		begin
+			*rest_of_args,input_hash=*args
+			init_Hash(*rest_of_args,input_hash)
+		rescue
+			init_dim *args
+		end
+
+	end
+
+	def init_Hash(*rest_of_args,input_hash)
+
+		# should be in a pre and post
+			assert_respond_to(input_hash, :[])
+			assert_respond_to(input_hash, :length)
+
+			rest_of_args.each do |arg|
+
+				assert_respond_to(arg,:to_i)
+			end
+
+			@values_hash=input_hash
+			@dimension=*rest_of_args
+	end
+
+
+	def init_dim(*args)
+
 		@values_hash = Hash.new
 		@dimension=*args
 		invariants
@@ -21,7 +50,7 @@ class SparseMatrix
 		post_insert_at(position,value)
 	end
 
-	# 
+	#
 	def to_s
 		@values_hash.each do |key, array|
 			puts "#{key}---#{array}"
@@ -33,10 +62,11 @@ class SparseMatrix
 		assert(size >= 1,"not a valid matrix dimension")
 		assert (self.is_a? SparseMatrix), "It is not a sparse matrix whoops"
 	end
-    #returns the size  
+    #returns the size
 	def size()
 		return @dimension.inject(:*)
 	end
+
 
 	def checkSum
 		preCheckSum(self)
@@ -64,20 +94,116 @@ class SparseMatrix
 	# 	post_sparse_matrix_addition(m)
 	# end
 
-	# def -(m)
-	# 	pre_sparse_matrix_subtraction
-	# 	post_sparse_matrix_subtraction
-	# end
 
-	# def *(m)
-	# 	pre_sparse_matrix_multiplication
-	# 	post_sparse_matrix_multiplication
-	# end
+	def +(m)
+		if m.respond_to?(:sparse_matrix_add_sub)
+			result = self.sparse_matrix_add_sub(m){|v1,v2| v1+v2}
+		else
+			result = self.scalar_add_sub(m){|v1| v1 + m}
+		end
+	end
 
-	# def /(m)
-	# 	pre_sparse_matrix_division
-	# 	post_sparse_matrix_division
-	# end
+	def -(m)
+		if m.respond_to?(:sparse_matrix_add_sub)
+			result = self.sparse_matrix_add_sub(m){|v1,v2| v1-v2}
+		else
+			result = self.scalar_add_sub(-m){|v1| v1 - m}
+		end
+	end
+
+	def sparse_matrix_add_sub(m)
+		result=m.get_array
+		@values_hash.each do |key, value|
+			result[key[0]][key[1]] = yield(values_hash[key],result[key[0]][key[1]])
+		end
+
+		begin
+			result=array_to_sparse(result)
+		rescue
+			return result
+		end
+
+		return result
+	end
+
+	#need to move this into calvin's class
+	def array_to_sparse(dense_m)
+		sparse_m=SparseMatrix.new
+		for i in 0..dense_m.getDimension[0]-1 do
+			for j in 0..dense_m.getDimension[0]-1 do
+
+				if dense_m[i][j]!=0
+					sparse_m.insert_at([i,j],dense_m[i][j])
+				end
+
+			end
+		end
+		return sparse_m
+	end
+	def get_array
+		result=Array.new(dimension[0]){Array.new(dimension[1],0)}
+		@values_hash.each do |key,value|
+			result[key[0]][key[1]]=value
+		end
+		return result
+	end
+	def scalar_add_sub(m)
+
+
+		result=Array.new(@dimension[0]){Array.new(@dimension[1],m)}
+		@values_hash.each do |key,value|
+			result[key[0]][key[1]] = yield(values_hash[key])
+		end
+		return result
+	end
+
+	def *(m)
+
+		if m.respond_to?(:sparse_matrix_multiplication)
+			result = self.sparse_matrix_multiplication(m)
+		else
+			result = self.scalar_mult_div{|v1| v1 * m}
+		end
+	end
+
+	def /(m)
+		if m.respond_to?(:sparse_matrix_multiplication)
+			result = self.sparse_matrix_multiplication(inverse(m))
+		else
+			result = self.scalar_mult_div{|v1| v1 / m}
+		end
+	end
+
+	def scalar_mult_div
+		result = @values_hash.dup
+		result.each do |key1, value1|
+			puts
+			result[key1] = yield(result[key1])
+		end
+		return SparseMatrix.new(*@dimension,result)
+	end
+
+
+
+	## NOT DONE
+	def sparse_matrix_multiplication(m)
+
+		for i in 0..dimension[0]-1 do
+			sum = 0
+			for j in 0..dimension[0]-1 do
+				v1=0;
+				v2=0;
+				begin
+					v1= @values_hash[[i,j]]
+				rescue
+					v2=m.getValues([])
+				rescue
+					next
+				end
+			end
+		end
+		return something
+	end
 
 	# def det()
 	# 	preDeterminant
@@ -99,11 +225,11 @@ class SparseMatrix
 
 
 	def transpose()
-		preTranspose
-		postTranspose
+		# preTranspose
+		# postTranspose
 	end
 
-	def inverse()
+	def inverse(m)
 		preInverse
 		postInverse
 	end
@@ -267,7 +393,7 @@ class SparseMatrix
 	# ensures that the division of the matrix is implemented correctly by taking the inverse of the matrix
 	def post_sparse_matrix_division(other,result)
 		assert_equal self.getDimension[0], result.getDimension[0], 'returned matrix of different x dimension'
-		assert_equal other.getDimension[1], result.getDimension[1], 'returned matrix of different y dimension'		
+		assert_equal other.getDimension[1], result.getDimension[1], 'returned matrix of different y dimension'
 		invariants
 	end
 
@@ -310,7 +436,7 @@ class SparseMatrix
 		invariants
 	end
 
-	# ensures that the result of the transpose is correct by retransposing it 
+	# ensures that the result of the transpose is correct by retransposing it
 	def postTranspose(result)
 		assert_equal(self.getDimension, result.getDimension.reverse, 'dimensions are not correct')
 		assert_equal(self.checkSum{|sum, value| sum + value}, result.checkSum{|sum, value| sum + value}, 'transpose failed')
@@ -335,7 +461,7 @@ class SparseMatrix
 	end
 
 	# ensures that it is a sparse matrix
-	def pre_power(other)		
+	def pre_power(other)
 		assert(other.respond_to? (:round), "Not a number")
 		invariants
 	end
@@ -367,24 +493,47 @@ class SparseMatrix
 	# private :pre_power, :post_power
 
 end
-b = SparseMatrix. new(2,2)
-b.insert_at([1,1],5)
+
+# b = SparseMatrix. new(2,2)
+# b.insert_at([1,1],5)
+# b.to_s
+# puts b.checkSum{|sum, x| sum+x}
+#
+# c = DenseMatrix. new(3,3)
+# c.insert_at([1,1],2)
+# c.insert_at([0,0],0)
+# c.insert_at([0,1],0)
+# c.insert_at([1,0],1)
+#
+# a = DenseMatrix. new(2,3)
+# a.insert_at([1,1],10)
+# a.insert_at([0,0],0)
+# a.insert_at([0,1],0)
+# a.insert_at([1,0],5)
+#
+# d= SparseMatrix. new(3,2)
+# d.insert_at([2,1],5)
+
+
+b = SparseMatrix. new(3,3)
+b.insert_at([1,1],1)
+b.insert_at([0,0],2)
+b.insert_at([0,1],2)
+d = SparseMatrix. new(3,3)
+# d.insert_at([1,1],2)
+# d.insert_at([0,0],2)
+# d.insert_at([0,1],2)
 b.to_s
-puts b.checkSum{|sum, x| sum+x}
-
-c = DenseMatrix. new(3,3)
-c.insert_at([1,1],2)
-c.insert_at([0,0],0)
-c.insert_at([0,1],0)
-c.insert_at([1,0],1)
-
-a = DenseMatrix. new(2,3)
-a.insert_at([1,1],10)
-a.insert_at([0,0],0)
-a.insert_at([0,1],0)
-a.insert_at([1,0],5)
-
-d= SparseMatrix. new(3,2)
-d.insert_at([2,1],5)
-
-
+c = b + d
+c.to_s
+p c
+#I knew this wouldn't work but reem yelled at me NVM FIXED
+e=b*2
+p b.get_array
+p e.get_array
+# b.to_s
+# h=Hash.new
+# h[[1,1]]=1
+# h[[0,1]]=2
+# a= SparseMatrix.new(3,3,h)
+# puts a.getDimension
