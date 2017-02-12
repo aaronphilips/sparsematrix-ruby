@@ -1,15 +1,16 @@
 require 'matrix'
 require 'pp'
 require 'test/unit'
+require_relative 'DenseMatrix'
 
 class SparseMatrix
-	attr_accessor :dimension, :valuesHash
+	attr_accessor :dimension, :values_hash
 	include Test::Unit::Assertions
 
 	# initialize the SparseMatrix
-	def initialize(args)
+	def initialize(*args)
 		@values_hash = Hash.new
-		@dimension=args
+		@dimension=*args
 		invariants
 	end
 
@@ -35,6 +36,26 @@ class SparseMatrix
     #returns the size  
 	def size()
 		return @dimension.inject(:*)
+	end
+
+	def checkSum
+		preCheckSum(self)
+		sum = 0
+		self.getValues.each do |key,value|
+			sum = yield sum, value
+		end
+		postCheckSum(sum)
+		return sum
+	end
+
+	def preCheckSum(matrix)
+		assert(matrix.respond_to? (:getValues))
+		invariants
+	end
+
+	def postCheckSum(sum)
+		assert sum.respond_to? (:round)
+		invariants
 	end
 
 	# FOR LATERRRR ################
@@ -92,31 +113,31 @@ class SparseMatrix
 	end
 
 	def getValues
-		return self.valuesHash
+		return self.values_hash
 	end
 
 	def scalar_addition(other)
 		pre_scalar_addition(other)
 		retval = SparseMatrix.new(@dimension)
-		post_scalar_addition(other, retval)
+		post_scalar_addition(other,retval){|other, original| original.checkSum{|sum, value| sum+value} + (original.size * other)}
 	end
 
 	def scalar_subtraction(other)
 		pre_scalar_subtraction(other)
 		retval = SparseMatrix.new(@dimension)
-		post_scalar_subtraction(other,retval)
+		post_scalar_subtraction(other,retval){|other, original| original.checkSum{|sum, value| sum+value} - (original.size * other)}
 	end
 
 	def scalar_multiplication(other)
 		pre_scalar_multiplication(other)
 		retval = SparseMatrix.new(@dimension)
-		post_scalar_multiplication(other,retval)
+		post_scalar_multiplication(other,retval){|other, original| original.checkSum{|sum, value| sum+value} * other}
 	end
 
 	def scalar_division(other)
 		pre_scalar_division(other)
 		retval = SparseMatrix.new(@dimension)
-		post_scalar_division(other,retval)
+		post_scalar_division(other,retval){|other, original| original.checkSum{|sum, value| sum+value} / other}
 	end
 
 	# to insert a value in a sparse matrix we have to ensure the position is valid for that matrix's dimension
@@ -138,147 +159,132 @@ class SparseMatrix
 
 	# ensures that the the value added is a spare matrix and dimensions of the two matrices are the same
 	def pre_sparse_matrix_addition(other)
-		invariants
-		assert(other.is_a?(SparseMatrix), 'not adding by a sparse matrix')
+		assert(other.respond_to?(:checkSum), 'not adding by a sparse matrix')
 		# assert_equal self.dimension.length, other.getDimension.length, "matrices need to be same dimension"
 		assert_equal self.dimension, other.getDimension, "dimension sizes are different"
+		invariants
 	end
 
 	# ensures that that the sparse matrix is added correctly
-	def post_sparse_matrix_addition(other,result)
+	def post_sparse_matrix_addition(other, result)
+		expected = self.checkSum{|sum, value| sum + value} + other.checkSum{|sum, value| sum + value}
+		actual = result.checkSum{|sum, value| sum + value}
+		assert_equal expected, actual, 'matrices added wrong'
+		assert_equal self.getDimension, result.getDimension, 'returned matrix of different dimension'
 		invariants
-		result.getValues.each do |key1,value1|
-			assert_equal (@values_hash[key1]+other[key1]),value1,"Did not add SparseMatrix correctly"
-		end
 	end
 
 	# ensures that the value taken in is a sparse matrix and the dimensions of the two matrices are the same
-    def pre_sparse_matrix_subtraction(m)
-        invariants
-        assert(m.is_a?(SparseMatrix), 'not subtracting by a sparse matrix')
+    def pre_sparse_matrix_subtraction(other)
+        assert(other.respond_to?(:checkSum), 'not adding by a sparse matrix')
         # assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
-        assert_equal self.dimension, m.getDimension, "dimension sizes are different"
+        assert_equal self.dimension, other.getDimension, "dimension sizes are different"
+        invariants
     end
 
     # ensures that the sparse matrix is subtracted correctly
     def post_sparse_matrix_subtraction(other,result)
-        invariants
-        result.getValues.each do |key1,value1|
-			assert_equal (@values_hash[key1]-other[key1]),value1,"Did not subtract SparseMatrix correctly"
-		end
-    	
-    end
+        expected = self.checkSum{|sum, value| sum + value} - other.checkSum{|sum, value| sum + value}
+		actual = result.checkSum{|sum, value| sum + value}
+		assert_equal expected, actual, 'matrices subtracted wrong'
+		assert_equal self.getDimension, result.getDimension, 'returned matrix of different dimension'
+		invariants
+	end
 
     # ensures that the value inputted is a a Numeric
 	def pre_scalar_subtraction(other)
+		assert (other.respond_to? (:round)), "Not a number"
 		invariants
-		assert (other.is_a? Numeric), "Not a number"
 	end
 
 	# ensures that the scalar subtraction is correct. Also makes sure that if the value to be substracted
 	# is zero, then the result matrix is the same as the original matrix
 	def post_scalar_subtraction(other,result)
+		expected = yield other,self
+		actual = result.checkSum{|sum, value| sum + value}
+		assert_equal expected , actual, 'subtracted wrong by scalar'
+		assert_equal self.getDimension, result.getDimension, 'returned matrix of different dimension'
 		invariants
-		# think it should be try catch
-		if other == 0
-			assert_equal self, result, "Not the same matrix"
-		else
-			@values_hash.each do |key,value|
-				retval=eval("result"+key.to_s.gsub(",","]["))
-				assert_equal (value-other),retval, "Did not substract successfully"
-			end
-			# assume Dense matrix returned
-			#check dense matrix is correct
-			#see n_dimensional_array
-		end
 	end
 
 	# ensures that the value inputted is a Numeric value
 	def pre_scalar_addition(other)
+		assert (other.respond_to? (:round)), "Not a number"
 		invariants
-		assert (other.is_a? Numeric), "Not a number"
 	end
 
 	# ensures that the scalar addition is correct. If the value is zero then the matrix should be the same
 	def post_scalar_addition(other,result)
-		# think it should be try catch
+		expected = yield other,self
+		actual = result.checkSum{|sum, value| sum + value}
+		assert_equal expected , actual, 'added wrong by scalar'
+		assert_equal self.getDimension, result.getDimension, 'returned matrix of different dimension'
 		invariants
-		if other == 0
-			assert_equal self, result, "Not the same matrix"
-		else
-			@values_hash.each do |key,value|
-				retval=eval("result"+key.to_s.gsub(",","]["))
-				assert_equal (value+other),retval, "Did not add successfully"
-			end
-			# assume Dense matrix returned
-			#check dense matrix is correct
-		end
-
 	end
 
 	# ensures that the value inputted is a sparse matrix and the dimensions is 2 (for now)
 	def pre_sparse_matrix_multiplication(other)
-		invariants
-		assert (other.is_a? SparseMatrix), "Not a SparseMatrix"
-		assert_equal @dimension.length,2,"n dimensional multiplication not implemented yet"
+		assert(other.respond_to?(:getDimension), 'not adding by a sparse matrix')
+        # assert_equal self.dimension.length, m.getDimension.length, "matrices need to be same dimension"
+        assert_equal self.getDimension[1], other.getDimension[0], "dimension sizes are incorrect"
+        invariants
 	end
 
 	# ensures that the multiplication of a sparse matrix is multiplied correctly
 	def post_sparse_matrix_multiplication(other,result)
+		assert_equal self.getDimension[0], result.getDimension[0], 'returned matrix of different x dimension'
+		assert_equal other.getDimension[1], result.getDimension[1], 'returned matrix of different y dimension'
 		invariants
-		result.getValues.each do |key1,value1|
-			sum=0
-			@values_hash.each do |key2,value2|
-				other.getValues do |key3,value3|
-					if key2[0]==key1[0] and key1[1]==key3[1]
-						sum+=(value2+value3)
-					end
-				end
-				assert_equal sum,value1,"did not add correctly"
-			end	
-		end
 	end
 
 	# ensures that the value inputted is a numeric
 	def pre_scalar_multiplication(other)
+		assert (other.respond_to? (:round)), "Not a number"
 		invariants
-		assert (other.is_a? Numeric), "Not a number"
 	end
 
 	# ensures that the multiplication of a scalar is correct and is always a sparse matrix
-	def post_scalar_multiplication(other, retval)
+	def post_scalar_multiplication(other, result)
+		expected = yield other,self
+		actual = result.checkSum{|sum, value| sum + value}
+		assert_equal expected , actual, 'multiplied wrong by scalar'
+		assert_equal self.getDimension, result.getDimension, 'returned matrix of different dimension'
 		invariants
-		@values_hash.each do |key,value|
-			assert_equal (value*other),retval[key], "Did not multiply successfully"
-		end
 	end
 
 	# ensures that the value inputted is a sparse matrix
 	def pre_sparse_matrix_division(other)
 		invariants
-		assert (other.is_a? SparseMatrix), "Not a SparseMatrix"
-		assert_equal @dimension.length,2,"n dimensional multiplication not implemented yet"
+		assert (other.respond_to? (:getDimension)), "Not a SparseMatrix"
+		assert_block ('matrix is not square') do
+			other.getDimension.all? {|dimensionSize| dimensionSize == other.getDimension[0]}
+		end
+		assert_equal self.getDimension[1], other.getDimension[0], "dimension sizes are incorrect"
+		#*** need to check if det is 0
+
 	end
 
 	# ensures that the division of the matrix is implemented correctly by taking the inverse of the matrix
-	def post_sparse_matrix_division(result)
+	def post_sparse_matrix_division(other,result)
+		assert_equal self.getDimension[0], result.getDimension[0], 'returned matrix of different x dimension'
+		assert_equal other.getDimension[1], result.getDimension[1], 'returned matrix of different y dimension'		
 		invariants
-		post_sparse_matrix_multiplication(inverse(result))
 	end
 
 	# ensures that the number inputted is a numeric
 	def pre_scalar_division(other)
-		invariants
-		assert (other.is_a? Numeric), "Not a number"
+		assert (other.respond_to? (:round)), "Not a number"
 		assert (other!=0), "Division by a zero"
+		invariants
 	end
 
 	# ensures that the division of the scalar is done successfully
-	def post_scalar_division(other, retval)
+	def post_scalar_division(other, result)
+		expected = yield other,self
+		actual = result.checkSum{|sum, value| sum + value}
+		assert_equal expected , actual, 'divided wrong by scalar'
+		assert_equal self.getDimension, result.getDimension, 'returned matrix of different dimension'
 		invariants
-		@values_hash.each do |key,value|
-			assert_equal (value*other),retval[key], "Did not divide successfully"
-		end
 
 	end
 
@@ -313,7 +319,7 @@ class SparseMatrix
 
 	# ensures that the matrix is a sparse matrix
 	def preInverse()
-		assert(preDeterminant, 'matrix needs to be bale to get determinant')
+		assert(preDeterminant, 'matrix needs to be able to get determinant')
 		invariants
 	end
 
@@ -363,7 +369,22 @@ class SparseMatrix
 	private :pre_power, :post_power
 
 end
-b = SparseMatrix. new([2,2])
-b.insert_at([1,1],1)
+b = SparseMatrix. new(2,3)
+b.insert_at([1,1],5)
 b.to_s
+puts b.checkSum{|sum, x| sum+x}
+
+c = DenseMatrix. new(3,3)
+c.insert_at([1,1],2)
+c.insert_at([0,0],0)
+c.insert_at([0,1],0)
+c.insert_at([1,0],1)
+
+a = DenseMatrix. new(2,3)
+a.insert_at([1,1],10)
+a.insert_at([0,0],0)
+a.insert_at([0,1],0)
+a.insert_at([1,0],5)
+
+b.post_sparse_matrix_division(c,a)
 
