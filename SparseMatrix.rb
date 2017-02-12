@@ -3,11 +3,11 @@ require 'pp'
 require 'test/unit'
 
 class SparseMatrix
-	attr_accessor :dimension, :valuesHash
+	attr_accessor :dimension, :values_hash
 	include Test::Unit::Assertions
 
 	# initialize the SparseMatrix
-	def initialize(args)
+	def initialize(*args)
 		@values_hash = Hash.new
 		@dimension=args
 		invariants
@@ -37,26 +37,115 @@ class SparseMatrix
 		return @dimension.inject(:*)
 	end
 
-	# FOR LATERRRR ################
-	# def +(m)
-	# 	pre_sparse_matrix_addition(m)
-	# 	post_sparse_matrix_addition(m)
-	# end
 
-	# def -(m)
-	# 	pre_sparse_matrix_subtraction
-	# 	post_sparse_matrix_subtraction
-	# end
+	def +(m)
+		if m.respond_to?(:sparse_matrix_add_sub)
+			result = self.sparse_matrix_add_sub(m){|v1,v2| v1+v2}
+		else
+			result = self.scalar_add_sub(m){|v1| v1 + m}
+		end
+	end
 
-	# def *(m)
-	# 	pre_sparse_matrix_multiplication
-	# 	post_sparse_matrix_multiplication
-	# end
+	def -(m)
+		if m.respond_to?(:sparse_matrix_add_sub)
+			result = self.sparse_matrix_add_sub(m){|v1,v2| v1-v2}
+		else
+			result = self.scalar_add_sub(-m){|v1| v1 - m}
+		end
+	end
 
-	# def /(m)
-	# 	pre_sparse_matrix_division
-	# 	post_sparse_matrix_division
-	# end
+	def sparse_matrix_add_sub(m)
+		result=m.get_array
+		@values_hash.each do |key, value|
+			result[key[0]][key[1]] = yield(values_hash[key],result[key[0]][key[1]])
+		end
+
+		begin
+			result=array_to_sparse(result)
+		rescue
+			return result
+		end
+
+		return result
+	end
+
+	#need to move this into calvin's class 
+	def array_to_sparse(dense_m)
+		sparse_m=SparseMatrix.new
+		for i in 0..dense_m.getDimension[0]-1 do
+			for j in 0..dense_m.getDimension[0]-1 do
+			
+				if dense_m[i][j]!=0
+					sparse_m.insert_at([i,j],dense_m[i][j])
+				end
+
+			end
+		end
+		return sparse_m
+	end
+	def get_array
+		result=Array.new(dimension[0]){Array.new(dimension[1],0)}
+		@values_hash.each do |key,value|
+			result[key[0]][key[1]]=value
+		end
+		return result
+	end
+	def scalar_add_sub(m)
+		
+		
+		result=Array.new(@dimension[0]){Array.new(@dimension[1],m)}
+		@values_hash.each do |key,value|
+			result[key[0]][key[1]] = yield(values_hash[key])
+		end
+		return result
+	end
+
+	def *(m)
+
+		if m.respond_to?(:sparse_matrix_multiplication)
+			result = self.sparse_matrix_multiplication(m)
+		else
+			result = self.scalar_mult_div{|v1| v1 * m}
+		end
+	end
+
+	def /(m)
+		if m.respond_to?(:sparse_matrix_multiplication)
+			result = self.sparse_matrix_multiplication(inverse(m))
+		else
+			result = self.scalar_mult_div{|v1| v1 / m}
+		end
+	end
+
+	def scalar_mult_div
+		result = @values_hash.dup
+		result.each do |key1, value1|
+			puts 
+			result[key1] = yield(result[key1])
+		end
+	end
+
+
+
+	## NOT DONE
+	def sparse_matrix_multiplication(m)
+
+		for i in 0..dimension[0]-1 do
+			sum = 0
+			for j in 0..dimension[0]-1 do
+				v1=0;
+				v2=0;
+				begin 
+					v1= @values_hash[[i,j]]
+				rescue
+					v2=m.getValues([])
+				rescue
+					next
+				end
+			end
+		end
+		return something
+	end
 
 	# def det()
 	# 	preDeterminant
@@ -82,7 +171,7 @@ class SparseMatrix
 		postTranspose
 	end
 
-	def inverse()
+	def inverse(m)
 		preInverse
 		postInverse
 	end
@@ -92,7 +181,7 @@ class SparseMatrix
 	end
 
 	def getValues
-		return self.valuesHash
+		return self.values_hash
 	end
 
 	def scalar_addition(other)
@@ -363,7 +452,14 @@ class SparseMatrix
 	private :pre_power, :post_power
 
 end
-b = SparseMatrix. new([2,2])
+b = SparseMatrix. new(3,3)
 b.insert_at([1,1],1)
-b.to_s
-
+b.insert_at([0,0],2)
+b.insert_at([0,1],2)
+d = SparseMatrix. new(3,3)
+d.insert_at([1,1],2)
+d.insert_at([0,0],2)
+d.insert_at([0,1],2)
+d.to_s
+c = b + d
+p c
