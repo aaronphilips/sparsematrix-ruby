@@ -130,6 +130,9 @@ class NDimensionalMatrix
 	def get_2d_matrix
 		Matrix[*@arr]
 	end
+	def printMatrix
+		puts get_2d_matrix.to_a.map(&:inspect)
+	end
 end
 
 # NDimensionalMatrix.new 1
@@ -144,5 +147,6 @@ b=NDimensionalMatrix.new(3,3,n)
 c=NDimensionalMatrix.new(3,3,"hi")
 puts b
 puts c
-m= b.get_2d_matrix
-puts m.to_a.map(&:inspect)
+# m= b.get_2d_matrix
+# puts m.to_a.map(&:inspect)
+b.printMatrix
