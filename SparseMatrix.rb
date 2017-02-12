@@ -68,6 +68,19 @@ class SparseMatrix
 		return @dimension.inject(:*)
 	end
 
+	def getDimension
+		return self.dimension
+	end
+
+	def getValues
+		return self.values_hash
+	end
+
+	def printMatrix
+		matrix = Matrix.zero(self.getDimension[0], self.getDimension[1])
+		puts matrix.to_a.map(&:inspect)
+	end
+
 
 	def checkSum
 		preCheckSum(self)
@@ -98,18 +111,27 @@ class SparseMatrix
 
 	def +(m)
 		if m.respond_to?(:sparse_matrix_add_sub)
+			pre_sparse_matrix_addition(m)
 			result = self.sparse_matrix_add_sub(m){|v1,v2| v1+v2}
+			post_sparse_matrix_addition(m,result)
 		else
+			pre_scalar_addition(m)
 			result = self.scalar_add_sub(m){|v1| v1 + m}
+			post_scalar_addition(m,result){|other, original| original.checkSum{|sum, value| sum+value} + (original.size * other)}
 		end
 	end
 
 	def -(m)
 		if m.respond_to?(:sparse_matrix_add_sub)
+			pre_sparse_matrix_subtraction
 			result = self.sparse_matrix_add_sub(m){|v1,v2| v1-v2}
+			post_sparse_matrix_subtraction
 		else
+			pre_scalar_subtraction
 			result = self.scalar_add_sub(-m){|v1| v1 - m}
+			post_scalar_subtraction
 		end
+		
 	end
 
 	def sparse_matrix_add_sub(m)
@@ -206,10 +228,11 @@ class SparseMatrix
 		return something
 	end
 
-	# def det()
-	# 	preDeterminant
-	# 	postDeterminant
-	# end
+	def det()
+		preDeterminant
+		
+		postDeterminant
+	end
 
 	# def **(other)
 	# 	pre_power
@@ -226,21 +249,22 @@ class SparseMatrix
 
 
 	def transpose()
-		# preTranspose
-		# postTranspose
+		preTranspose
+
+		*args = self.getDimension
+		result = SparseMatrix.new(*args)
+		self.getValues.each do |key,value|
+			result.insert_at(key.reverse,value)
+		end
+
+		postTranspose(result)
+
+		return result
 	end
 
 	def inverse(m)
 		preInverse
 		postInverse
-	end
-
-	def getDimension
-		return self.dimension
-	end
-
-	def getValues
-		return self.values_hash
 	end
 
 	def scalar_addition(other)
@@ -303,21 +327,26 @@ class SparseMatrix
 	# private :pre_scalar_division, :post_scalar_division
 	# private :preDeterminant, :postDeterminant
 	# private :preInverse, :postInverse
-	# private :preTranspose, :postTranspose
+	 # public :preTranspose, :postTranspose
 	# private :pre_power, :post_power
 
 end
 
 b = SparseMatrix. new(2,2)
-b.insert_at([1,1],5)
-b.to_s
-puts b.checkSum{|sum, x| sum+x}
+b.insert_at([1,0],5)
+# b.to_s
+# puts b.checkSum{|sum, x| sum+x}
+#[0 0]
+#[5 0]
 
 c = DenseMatrix. new(3,3)
 c.insert_at([1,1],2)
 c.insert_at([0,0],0)
 c.insert_at([0,1],0)
 c.insert_at([1,0],1)
+#[0 0 0]
+#[1 2 0]
+#[0 0 0]
 
 a = DenseMatrix. new(2,3)
 a.insert_at([1,1],10)
@@ -328,6 +357,11 @@ a.insert_at([1,0],5)
 d= SparseMatrix. new(3,2)
 d.insert_at([2,1],5)
 
+result = b+b
+
+# result = b.transpose
+# puts b.getValues
+# puts result.getValues
 
 # b = SparseMatrix. new(3,3)
 # b.insert_at([1,1],1)
