@@ -26,18 +26,19 @@ class NDimensionalMatrix
 		end
 	end
 
+	#STUCK IN 2D. assert game is weak here too
 	def init_matrix *args
 		assert_equal 1,args.length,"Not the right size"
 		m=args[0]
 		assert_respond_to(m,:to_a)
 		@arr=m.to_a
+		@dimension=[m.to_a.length,m.to_a[0].length]
 	end
 
 	def init_sparse_matrix(*args)
 		assert_equal 1,args.length,"Not the right size"
 		sm=args[0]
 		assert_respond_to(sm,:get_sparse_matrix_hash)
-		puts sm.getDimension
 		init_Hash(*sm.getDimension,sm.get_sparse_matrix_hash)
 	end
 
@@ -46,7 +47,7 @@ class NDimensionalMatrix
 	def init_dim_val(*args)
 		*rest, value= args
 		@arr=recursive_nest_array(*rest,value)
-
+		@dimension=*rest
 	end
 
 
@@ -129,13 +130,7 @@ class NDimensionalMatrix
 	end
 
 	def checkSum
-		preCheckSum(self)
-		sum = 0
-		self.getValues.each do |key,value|
-			sum = yield sum, value
-		end
-		postCheckSum(sum)
-		return sum
+		return @arr.flatten.inject(:+)
 	end
 
 	def preCheckSum(matrix)
@@ -198,11 +193,11 @@ n[[0,0]]=1
 b=NDimensionalMatrix.new(3,3,n)
 c=NDimensionalMatrix.new(3,3,n)
 d=b**2
-puts b
-puts c
-puts d
+# puts b
+# puts c
+# puts d
 # m= b.get_2d_matrix
 # puts m.to_a.map(&:inspect)
 # b.printMatrix
-m=Matrix[[1,2],[3,4]]
+# m=Matrix[[1,2],[3,4]]
 # p m

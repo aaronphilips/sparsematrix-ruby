@@ -174,7 +174,6 @@ class SparseMatrix
 	def scalar_mult_div
 		result = @values_hash.dup
 		result.each do |key1, value1|
-			puts
 			result[key1] = yield(result[key1])
 		end
 		return SparseMatrix.new(*@dimension,result)
@@ -488,15 +487,19 @@ end
 # d.insert_at([2,1],5)
 
 
-b = SparseMatrix. new(3,3)
+b = SparseMatrix.new(3,3)
 b.insert_at([1,1],1)
 b.insert_at([0,0],2)
 b.insert_at([0,1],2)
-d = SparseMatrix. new(3,3)
+d = SparseMatrix.new(3,3)
 d.insert_at([1,1],2)
 d.insert_at([2,2],3)
 d.insert_at([1,0],1)
 d.insert_at([0,0],-1)
 
-a=b**2
+a=Array.new(3){Array.new(4,5)}
+a=NDimensionalMatrix.new(a)#b**2
+
+puts a
 a.printMatrix
+p a.checkSum
