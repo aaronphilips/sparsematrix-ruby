@@ -68,7 +68,7 @@ class SparseMatrix
 	def checkSum
 		preCheckSum(self)
 		sum = 0
-		self.getValues.each do |key,value|
+		self.get_sparse_matrix_hash.each do |key,value|
 			sum = yield sum, value
 		end
 		postCheckSum(sum)
@@ -76,7 +76,7 @@ class SparseMatrix
 	end
 
 	def preCheckSum(matrix)
-		assert(matrix.respond_to? (:getValues))
+		assert(matrix.respond_to? (:get_sparse_matrix_hash))
 		invariants
 	end
 
@@ -181,43 +181,19 @@ class SparseMatrix
 	end
 
 
-
-	## NOT DONE
 	def sparse_matrix_multiplication(m)
-
-		for i in 0..dimension[0]-1 do
-			sum = 0
-			for j in 0..dimension[0]-1 do
-				v1=0;
-				v2=0;
-				begin
-					v1= @values_hash[[i,j]]
-				rescue
-					v2=m.getValues([])
-				rescue
-					next
-				end
-			end
-		end
-		return something
+		matrix_1=NDimensionalMatrix.new(self)
+		matrix_2=NDimensionalMatrix.new(m)
+		return matrix_1*matrix_2
 	end
 
-	# def det()
-	# 	preDeterminant
-	# 	postDeterminant
-	# end
+	def det()
+		NDimensionalMatrix.new(self).det
+	end
 
-	# def **(other)
-	# 	pre_power
-	# 	post_power
-	# end
-
-	# raises every element in the matrix to numbers power
-	def power(other)
-		pre_power(other)
-		# stuff
-		retval=SparseMatrix.new(@dimension)
-		post_power(other,retval)
+	def **(other)
+		matrix_1=NDimensionalMatrix.new(self)
+		matrix_1=matrix_1**other
 	end
 
 
@@ -235,7 +211,7 @@ class SparseMatrix
 		return self.dimension
 	end
 
-	def getValues
+	def get_sparse_matrix_hash
 		return self.values_hash
 	end
 
@@ -517,20 +493,10 @@ b.insert_at([1,1],1)
 b.insert_at([0,0],2)
 b.insert_at([0,1],2)
 d = SparseMatrix. new(3,3)
-# d.insert_at([1,1],2)
-# d.insert_at([0,0],2)
-# d.insert_at([0,1],2)
-b.to_s
-c = b + d
-c.to_s
-p c
-#I knew this wouldn't work but reem yelled at me NVM FIXED
-e=b*2
-p b.get_array
-p e.get_array
-# b.to_s
-# h=Hash.new
-# h[[1,1]]=1
-# h[[0,1]]=2
-# a= SparseMatrix.new(3,3,h)
-# puts a.getDimension
+d.insert_at([1,1],2)
+d.insert_at([2,2],3)
+d.insert_at([1,0],1)
+d.insert_at([0,0],-1)
+
+a=b**2
+a.printMatrix

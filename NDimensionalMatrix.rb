@@ -9,12 +9,36 @@ class NDimensionalMatrix
 
 
 	def initialize(*args)
+
 		begin
 			*rest_of_args,input_hash=*args
 			init_Hash(*rest_of_args,input_hash)
 		rescue
-			init_dim_val *args
+			begin
+				init_dim_val *args
+			rescue
+				begin
+					init_sparse_matrix *args
+				rescue
+					init_matrix *args
+				end
+			end
 		end
+	end
+
+	def init_matrix *args
+		assert_equal 1,args.length,"Not the right size"
+		m=args[0]
+		assert_respond_to(m,:to_a)
+		@arr=m.to_a
+	end
+
+	def init_sparse_matrix(*args)
+		assert_equal 1,args.length,"Not the right size"
+		sm=args[0]
+		assert_respond_to(sm,:get_sparse_matrix_hash)
+		puts sm.getDimension
+		init_Hash(*sm.getDimension,sm.get_sparse_matrix_hash)
 	end
 
 
@@ -91,7 +115,7 @@ class NDimensionalMatrix
 		assert_equal value,@values_hash[position],"Value is not inserted. FAILED."
 	end
 
-    #returns the size  
+    #returns the size
 	def size()
 		return @dimension.inject(:*)
 	end
@@ -125,7 +149,8 @@ class NDimensionalMatrix
 	end
 
 	def to_s
-		@arr.inspect
+		# @arr.inspect
+		get_2d_matrix.to_a.map(&:inspect).inspect
 	end
 	def get_2d_matrix
 		Matrix[*@arr]
@@ -133,7 +158,34 @@ class NDimensionalMatrix
 	def printMatrix
 		puts get_2d_matrix.to_a.map(&:inspect)
 	end
+	def * (m)
+		NDimensionalMatrix.new(self.get_2d_matrix*m.get_2d_matrix)
+	end
+
+
+	def **(m)
+		NDimensionalMatrix.new(self.get_2d_matrix**m)
+	end
+
+
+	def +(m)
+		begin
+
+			self.get_2d_matrix+m.get_2d_matrix
+
+		rescue
+
+			self.get_2d_matrix+m
+		end
+	end
+
+	def det
+		NDimensionalMatrix.new(self.get_2d_matrix.det)
+	end
 end
+# def * (m)
+# 	self.get_2d_matrix*m.get_2d_matrix
+# end
 
 # NDimensionalMatrix.new 1
 
@@ -144,9 +196,13 @@ n[[0,0]]=1
 
 
 b=NDimensionalMatrix.new(3,3,n)
-c=NDimensionalMatrix.new(3,3,"hi")
+c=NDimensionalMatrix.new(3,3,n)
+d=b**2
 puts b
 puts c
+puts d
 # m= b.get_2d_matrix
 # puts m.to_a.map(&:inspect)
-b.printMatrix
+# b.printMatrix
+m=Matrix[[1,2],[3,4]]
+# p m
