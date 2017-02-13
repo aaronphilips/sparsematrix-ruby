@@ -1,7 +1,6 @@
 require 'matrix'
 require 'pp'
 require 'test/unit'
-require_relative 'DenseMatrix'
 require_relative 'SparseMatrixPrePost'
 require_relative 'NDimensionalMatrix'
 
@@ -337,25 +336,25 @@ b.insert_at([1,0],5)
 #[0 0]
 #[5 0]
 
-c = DenseMatrix. new(3,3)
-c.insert_at([1,1],2)
-c.insert_at([0,0],0)
-c.insert_at([0,1],0)
-c.insert_at([1,0],1)
+# c = DenseMatrix. new(3,3)
+# c.insert_at([1,1],2)
+# c.insert_at([0,0],0)
+# c.insert_at([0,1],0)
+# c.insert_at([1,0],1)
 #[0 0 0]
 #[1 2 0]
 #[0 0 0]
 
-a = DenseMatrix. new(2,3)
-a.insert_at([1,1],10)
-a.insert_at([0,0],0)
-a.insert_at([0,1],0)
-a.insert_at([1,0],5)
+# a = DenseMatrix. new(2,3)
+# a.insert_at([1,1],10)
+# a.insert_at([0,0],0)
+# a.insert_at([0,1],0)
+# a.insert_at([1,0],5)
 
 d= SparseMatrix. new(3,2)
 d.insert_at([2,1],5)
 
-result = b+b
+result = b+2
 
 # result = b.transpose
 # puts b.getValues
