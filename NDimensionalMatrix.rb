@@ -39,6 +39,7 @@ class NDimensionalMatrix
 		assert_equal 1,args.length,"Not the right size"
 		sm=args[0]
 		assert_respond_to(sm,:get_sparse_matrix_hash)
+		puts "convert from sparse"
 		init_Hash(*sm.getDimension,sm.get_sparse_matrix_hash)
 	end
 
@@ -182,7 +183,8 @@ class NDimensionalMatrix
 	end
 
 	def det
-		NDimensionalMatrix.new(self.get_2d_matrix.det)
+		result = self.get_2d_matrix.determinant
+		return result
 	end
 
 	def inv 
