@@ -50,7 +50,9 @@ class NDimensionalMatrix
 		@dimension=*rest
 	end
 
-
+	def get_array
+		return @arr
+	end
 	def init_Hash(*rest_of_args,input_hash)
 
 		# should be in a pre and post
@@ -183,21 +185,3 @@ end
 # end
 
 # NDimensionalMatrix.new 1
-
-n = Hash.new
-n[[2,1]]=4
-n[[1,1]]=2
-n[[0,0]]=1
-
-
-b=NDimensionalMatrix.new(3,3,n)
-c=NDimensionalMatrix.new(3,3,n)
-d=b**2
-# puts b
-# puts c
-# puts d
-# m= b.get_2d_matrix
-# puts m.to_a.map(&:inspect)
-# b.printMatrix
-# m=Matrix[[1,2],[3,4]]
-# p m
