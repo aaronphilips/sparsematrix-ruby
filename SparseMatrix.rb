@@ -28,10 +28,10 @@ class SparseMatrix
 		# assert(!rest_of_args.empty?, "empty")
 			assert_respond_to(input_hash, :length)
 			assert_respond_to(input_hash, :hash)
-			rest_of_args.each do |arg|
-
-				assert_respond_to(arg,:to_i)
-			end
+			# rest_of_args.each do |arg|
+			#
+			# 	assert_respond_to(arg,:to_i)
+			# end
 
 			@values_hash=input_hash
 			return self

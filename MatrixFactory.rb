@@ -29,7 +29,8 @@ end
 # puts d
 # puts c
 factory=MatrixFactory.new
-a=factory.create_matrix([[1,0],[0,0],[1,0]])
+a=factory.create_matrix([[1,0],[0,0]])
 b=factory.create_matrix([[1,0],[1,1],[1,0]])
 puts a.class
 puts b.class
+puts a*2
