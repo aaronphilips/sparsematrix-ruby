@@ -159,6 +159,8 @@ class NDimensionalMatrix
 		puts get_2d_matrix.to_a.map(&:inspect)
 	end
 	def * (m)
+		assert(self.respond_to?(:get_2d_matrix), 'self not NDimensionalMatrix')
+		assert(m.respond_to?(:get_2d_matrix), 'other not NDimensionalMatrix')
 		NDimensionalMatrix.new(self.get_2d_matrix*m.get_2d_matrix)
 	end
 
@@ -181,6 +183,10 @@ class NDimensionalMatrix
 
 	def det
 		NDimensionalMatrix.new(self.get_2d_matrix.det)
+	end
+
+	def inv 
+		NDimensionalMatrix.new(self.get_2d_matrix.inverse)
 	end
 end
 # def * (m)

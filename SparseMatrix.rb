@@ -186,24 +186,35 @@ class SparseMatrix
 		@values_hash.each do |key,value|
 			result[key[0]][key[1]] = yield(values_hash[key])
 		end
+		result = @factory.create_matrix(result) 
 		return result
 	end
 
 	def *(m)
 
 		if m.respond_to?(:checkSum)
+			pre_sparse_matrix_multiplication(m)
 			result = self.sparse_matrix_multiplication(m)
+			post_sparse_matrix_multiplication(m,result)
 		else
+			pre_scalar_multiplication(m)
 			result = self.scalar_mult_div{|v1| v1 * m}
+			post_scalar_multiplication(m,result){|other, original| original.checkSum{|sum, value| sum+value} * other}
 		end
+		result
 	end
 
 	def /(m)
 		if m.respond_to?(:checkSum)
+			pre_sparse_matrix_division(m)
 			result = self.sparse_matrix_multiplication(inverse(m))
+			post_sparse_matrix_division(m,result)
 		else
+			pre_scalar_division(m)
 			result = self.scalar_mult_div{|v1| v1 / m}
+			post_scalar_division(m,result){|other, original| original.checkSum{|sum, value| sum+value} / other}
 		end
+		result
 	end
 
 	def scalar_mult_div
@@ -217,8 +228,11 @@ class SparseMatrix
 
 	def sparse_matrix_multiplication(m)
 		matrix_1=NDimensionalMatrix.new(self)
-		matrix_2=NDimensionalMatrix.new(m)
-		return @factory.create_matrix((matrix_1*matrix_2).get_array)
+		if !m.class == NDimensionalMatrix
+			matrix_2=NDimensionalMatrix.new(m)
+			return @factory.create_matrix((matrix_1*matrix_2).get_array)
+		end
+		return @factory.create_matrix((matrix_1*m).get_array)
 	end
 
 	def det()
@@ -245,10 +259,16 @@ class SparseMatrix
 	end
 
 	def inverse(m)
-		# preInverse
-		matrix_1=NDimensionalMatrix.new(self)
-		return matrix_1.inv
-		# postInverse
+		preInverse(m)
+		if m.class != NDimensionalMatrix
+			matrix_1=NDimensionalMatrix.new(m)
+			result = @factory.create_matrix(matrix_1.inv.get_array)
+			postInverse(m,result)
+			return result
+		end
+		result = @factory.create_matrix(m.inv.get_array)
+		postInverse(m,result)
+		return result
 	end
 
 	def get_sparse_matrix_hash

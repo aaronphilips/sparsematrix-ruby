@@ -128,10 +128,7 @@ end
 
 # ensures that the division of the scalar is done successfully
 def post_scalar_division(other, result)
-	assert(result.respond_to?(:checkSum), 'not returning a matrix')
-	expected = yield other,self
-	actual = result.checkSum{|sum, value| sum + value}
-	assert_equal expected , actual, 'divided wrong by scalar'
+	assert(result.respond_to?(:getDimension), 'not returning a matrix')
 	assert_equal self.getDimension, result.getDimension, 'returned matrix of different dimension'
 	invariants
 
@@ -169,18 +166,18 @@ def postTranspose(result)
 end
 
 # ensures that the matrix is a sparse matrix
-def preInverse()
-	assert_block ('matrix is not square') do
-		self.getDimension.all? {|dimensionSize| dimensionSize == self.getDimension[0]}
+def preInverse(m)
+	assert_block ("#{m} matrix is not square") do
+		m.getDimension.all? {|dimensionSize| dimensionSize == m.getDimension[0]}
 	end
 	# assert(self.determinant != 0)
 	invariants
 end
 
 # ensures that the inverse is done correctly
-def postInverse(result)
+def postInverse(m,result)
 	assert(result.respond_to? (:getDimension), 'not a matrix')
-	assert_equal(self.getDimension, result.getDimension, 'dimension are not the same')
+	assert_equal(m.getDimension, result.getDimension, 'dimension are not the same')
 	# assert_equal(identityMatrix, self * result, 'inverse did not work')
 	invariants
 end
