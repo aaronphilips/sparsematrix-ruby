@@ -1,6 +1,7 @@
 require 'matrix'
 require 'pp'
 require 'test/unit'
+require_relative 'SparseMatrixPrePost'
 
 class NDimensionalMatrix
 	attr_accessor :dimension, :values_hash
@@ -9,7 +10,6 @@ class NDimensionalMatrix
 
 
 	def initialize(*args)
-
 		begin
 			*rest_of_args,input_hash=*args
 			init_Hash(*rest_of_args,input_hash)
@@ -26,25 +26,20 @@ class NDimensionalMatrix
 		end
 	end
 
-	#STUCK IN 2D. assert game is weak here too
+
 	def init_matrix *args
-		assert_equal 1,args.length,"Not the right size"
+		pre_init_matrix(*args)
 		m=args[0]
-		assert_respond_to(m,:to_a)
 		@arr=m.to_a
 		@dimension=[m.to_a.length,m.to_a[0].length]
 	end
 
 	def init_sparse_matrix(*args)
-		assert_equal 1,args.length,"Not the right size"
+		pre_init_sparse_matrix(*args)
 		sm=args[0]
-		assert_respond_to(sm,:get_sparse_matrix_hash)
-		puts "convert from sparse"
 		init_Hash(*sm.getDimension,sm.get_sparse_matrix_hash)
 	end
 
-
-	# initialize the SparseMatrix
 	def init_dim_val(*args)
 		*rest, value= args
 		@arr=recursive_nest_array(*rest,value)
@@ -54,24 +49,16 @@ class NDimensionalMatrix
 	def get_array
 		return @arr
 	end
+
 	def init_Hash(*rest_of_args,input_hash)
+		pre_init_hash(*rest_of_args,input_hash)
+		init_dim_val(*rest_of_args,0)
+		input_hash.each do |key, value|
+			@arr[key[0]][key[1]]=value
 
-		# should be in a pre and post
-			# assert_respond_to(input_hash, :[])
-			assert_respond_to(input_hash, :length)
-			assert_respond_to(input_hash, :hash)
-			rest_of_args.each do |arg|
-
-				assert_respond_to(arg,:to_i)
-			end
-			# 2d for now
-			init_dim_val(*rest_of_args,0)
-			input_hash.each do |key, value|
-				@arr[key[0]][key[1]]=value
-
-			end
-			@values_hash=input_hash
-			@dimension=*rest_of_args
+		end
+		@values_hash=input_hash
+		@dimension=*rest_of_args
 	end
 
 	def recursive_nest_array(*args,value)
@@ -153,6 +140,7 @@ class NDimensionalMatrix
 		puts get_2d_matrix.to_a.map(&:inspect)
 	end
 	def * (m)
+		puts m.class
 		assert(self.respond_to?(:get_2d_matrix), 'self not NDimensionalMatrix')
 		assert(m.respond_to?(:get_2d_matrix), 'other not NDimensionalMatrix')
 		NDimensionalMatrix.new(self.get_2d_matrix*m.get_2d_matrix)
@@ -166,7 +154,7 @@ class NDimensionalMatrix
 
 	def +(m)
 		begin
-
+			# pre_sparse_Addition(m)
 			self.get_2d_matrix+m.get_2d_matrix
 
 		rescue
@@ -184,8 +172,4 @@ class NDimensionalMatrix
 		NDimensionalMatrix.new(self.get_2d_matrix.inverse)
 	end
 end
-# def * (m)
-# 	self.get_2d_matrix*m.get_2d_matrix
-# end
 
-# NDimensionalMatrix.new 1

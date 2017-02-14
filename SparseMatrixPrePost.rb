@@ -101,13 +101,13 @@ end
 
 # ensures that the value inputted is a sparse matrix
 def pre_sparse_matrix_division(other)
-	
+
 	assert (other.respond_to? (:getDimension)), "Not a SparseMatrix"
 	assert_block ('matrix is not square') do
 		other.getDimension.all? {|dimensionSize| dimensionSize == other.getDimension[0]}
 	end
 	assert_equal self.getDimension[1], other.getDimension[0], "dimension sizes are incorrect"
-	# assert(other.determinant != 0)
+	assert(other.det != 0, 'second matrix has det of 0!')
 	invariants
 end
 
@@ -170,7 +170,7 @@ def preInverse(m)
 	assert_block ("#{m} matrix is not square") do
 		m.getDimension.all? {|dimensionSize| dimensionSize == m.getDimension[0]}
 	end
-	# assert(self.determinant != 0)
+	assert(self.det != 0)
 	invariants
 end
 
@@ -193,4 +193,57 @@ def post_power(result)
 	assert(result.respond_to? (:getDimension), 'not a matrix')
 	assert_equal(self.getDimension, result.getDimension, 'dimensions not the same')
 	invariants
+end
+
+def pre_insert_at(position,value)
+	invariants
+	assert_equal position.length, @dimension.length,"Invalid position."
+	for i in 0..@dimension.length-1 do
+		assert(@dimension[i]>position[i], "Invalid position in matrix")
+	end
+	assert (value!=0), "Inserting a zero"
+end
+
+def post_insert_at(position,value)
+	invariants
+	assert_equal value,@values_hash[position],"Value is not inserted. FAILED."
+end
+
+def preCheckSum(matrix)
+	assert(matrix.respond_to? (:get_sparse_matrix_hash))
+	invariants
+end
+
+def postCheckSum(sum)
+	assert sum.respond_to? (:round)
+	invariants
+end
+
+def pre_init_dim(*args)
+	assert(args.length>1,"not right length")
+end
+
+def pre_init_array(arg)
+	assert_respond_to(arg,:to_a,"Not an array")
+end
+
+def pre_init_matrix(*args)
+	assert_equal 1,args.length,"Not the right size"
+	m=args[0]
+	assert_respond_to(m,:to_a)
+end
+
+def pre_init_sparse_matrix(*args)
+	assert_equal 1,args.length,"Not the right size"
+	sm=args[0]
+	assert_respond_to(sm,:get_sparse_matrix_hash)
+end
+
+def pre_init_hash(*rest_of_args,input_hash)
+
+	assert_respond_to(input_hash, :length)
+	assert_respond_to(input_hash, :hash)
+	rest_of_args.each do |arg|
+		assert_respond_to(arg,:to_i)
+	end
 end
