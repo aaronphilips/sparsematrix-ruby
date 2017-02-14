@@ -149,29 +149,20 @@ class SparseMatrix
 
 	def sparse_matrix_add_sub(m)
 		result=m.get_array.map{|values| values.clone}
-		self.getValues.each do |key, value|
-			puts "#{value} + #{result[key[0]][key[1]]}"
-			result[key[0]][key[1]] = yield(value,result[key[0]][key[1]])
+
+		result.length.times do |i|
+			result[i].length.times do |j|
+				if (self.getValues.key?([i,j]))
+					result[i][j] = yield(self.getValues[[i,j]],result[i][j])
+				else
+					result[i][j] = yield(0,result[i][j])
+				end
+			end
 		end
-		# factory
 		result = @factory.create_matrix(result) 
 		return result
 	end
 
-	#need to move this into calvin's class
-	# def array_to_sparse(dense_m)
-	# 	sparse_m=SparseMatrix.new
-	# 	for i in 0..dense_m.getDimension[0]-1 do
-	# 		for j in 0..dense_m.getDimension[0]-1 do
-	#
-	# 			if dense_m[i][j]!=0
-	# 				sparse_m.insert_at([i,j],dense_m[i][j])
-	# 			end
-	#
-	# 		end
-	# 	end
-	# 	return sparse_m
-	# end
 	def get_array
 		result=Array.new(dimension[0]){Array.new(dimension[1],0)}
 		self.getValues.each do |key,value|
@@ -179,6 +170,8 @@ class SparseMatrix
 		end
 		return result
 	end
+
+	
 	def scalar_add_sub(m)
 
 
