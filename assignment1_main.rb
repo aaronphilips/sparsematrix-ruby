@@ -1,5 +1,5 @@
 require_relative 'MatrixFactory'
-require_relative 'SparseMatrix'
+# require_relative 'SparseMatrix'
 
 puts 'hi, welcome to ECE 421 sparse matrix package'
 

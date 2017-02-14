@@ -154,7 +154,6 @@ class NDimensionalMatrix
 
 	def +(m)
 		begin
-			# pre_sparse_Addition(m)
 			self.get_2d_matrix+m.get_2d_matrix
 
 		rescue
