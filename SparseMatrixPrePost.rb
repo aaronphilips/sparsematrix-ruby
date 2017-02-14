@@ -101,7 +101,7 @@ end
 
 # ensures that the value inputted is a sparse matrix
 def pre_sparse_matrix_division(other)
-	
+
 	assert (other.respond_to? (:getDimension)), "Not a SparseMatrix"
 	assert_block ('matrix is not square') do
 		other.getDimension.all? {|dimensionSize| dimensionSize == other.getDimension[0]}
@@ -219,7 +219,7 @@ def postCheckSum(sum)
 	invariants
 end
 
-def pre_init_dim(*arg)
+def pre_init_dim(*args)
 	assert(args.length>1,"not right length")
 end
 
@@ -240,12 +240,10 @@ def pre_init_sparse_matrix(*args)
 end
 
 def pre_init_hash(*rest_of_args,input_hash)
-	
+
 	assert_respond_to(input_hash, :length)
 	assert_respond_to(input_hash, :hash)
 	rest_of_args.each do |arg|
 		assert_respond_to(arg,:to_i)
 	end
 end
-
-

@@ -74,8 +74,9 @@ class SparseMatrix
 	end
 
 	def printMatrix
-		matrix = Matrix.zero(self.getDimension[0], self.getDimension[1])
-		puts matrix.to_a.map(&:inspect)
+		NDimensionalMatrix.new(self).printMatrix
+		# matrix = Matrix.zero(self.getDimension[0], self.getDimension[1])
+		# puts matrix.to_a.map(&:inspect)
 	end
 
 
@@ -130,7 +131,7 @@ class SparseMatrix
 			end
 		end
 
-		result = @factory.create_matrix(result) 
+		result = @factory.create_matrix(result)
 		return result
 	end
 
@@ -142,7 +143,7 @@ class SparseMatrix
 		return result
 	end
 
-	
+
 	def scalar_add_sub(m)
 
 
@@ -150,7 +151,7 @@ class SparseMatrix
 		@values_hash.each do |key,value|
 			result[key[0]][key[1]] = yield(values_hash[key])
 		end
-		result = @factory.create_matrix(result) 
+		result = @factory.create_matrix(result)
 		return result
 	end
 
@@ -274,6 +275,3 @@ class SparseMatrix
 
 
 end
-
-
-
