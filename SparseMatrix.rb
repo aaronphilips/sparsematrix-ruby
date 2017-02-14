@@ -4,42 +4,62 @@ require 'test/unit'
 require_relative 'DenseMatrix'
 require_relative 'SparseMatrixPrePost'
 require_relative 'NDimensionalMatrix'
-
+# require_relative 'MatrixFactory'
 class SparseMatrix
 	attr_accessor :dimension, :values_hash
 	include Test::Unit::Assertions
 
 	# initialize the SparseMatrix
 	def initialize(*args)
-		begin
-			*rest_of_args,input_hash=*args
-			init_Hash(*rest_of_args,input_hash)
-		rescue
-			init_dim *args
-		end
+		# begin
+		# 	*rest_of_args,input_hash=*args
+		# 	init_Hash(*rest_of_args,input_hash)
+		# rescue
+		# 	begin
+				init_dim *args
+		# 	rescue
+		# 		init_array args[0]
+		# 	end
+		# end
+		@factory = MatrixFactory.new
 	end
 
-	def init_Hash(*rest_of_args,input_hash)
+	def init_Hash(input_hash)
 
 		# should be in a pre and post
-			# assert_respond_to(input_hash, :[])
+		# assert(!rest_of_args.empty?, "empty")
 			assert_respond_to(input_hash, :length)
 			assert_respond_to(input_hash, :hash)
-			rest_of_args.each do |arg|
-
-				assert_respond_to(arg,:to_i)
-			end
+			# rest_of_args.each do |arg|
+			#
+			# 	assert_respond_to(arg,:to_i)
+			# end
 
 			@values_hash=input_hash
-			@dimension=*rest_of_args
+			return self
+			# @dimension=*rest_of_args
 	end
 
 
 	def init_dim(*args)
-
+		assert(args.length>1,"not right length")
 		@values_hash = Hash.new
 		@dimension=*args
 		invariants
+	end
+
+	def init_array(arg)
+		#NEED assert_respond_to
+		puts "got to array"
+		@values_hash = Hash.new
+		@dimension[0].times do |i|
+			@dimension[1].times do |j|
+				if(arg[i][j]!=0)
+					@values_hash[[i,j]]=arg[i][j]
+				end
+			end
+		end
+		return self
 	end
 
 	# Insert values into matrix
@@ -74,6 +94,11 @@ class SparseMatrix
 		return self.values_hash
 	end
 
+	
+	def get_sparse_matrix_hash
+		return self.values_hash
+	end
+
 	def printMatrix
 		matrix = Matrix.zero(self.getDimension[0], self.getDimension[1])
 		puts matrix.to_a.map(&:inspect)
@@ -83,7 +108,7 @@ class SparseMatrix
 	def checkSum
 		preCheckSum(self)
 		sum = 0
-		self.getValues.each do |key,value|
+		self.get_sparse_matrix_hash.each do |key,value|
 			sum = yield sum, value
 		end
 		postCheckSum(sum)
@@ -91,7 +116,7 @@ class SparseMatrix
 	end
 
 	def preCheckSum(matrix)
-		assert(matrix.respond_to? (:getValues))
+		assert(matrix.respond_to? (:get_sparse_matrix_hash))
 		invariants
 	end
 
@@ -100,11 +125,6 @@ class SparseMatrix
 		invariants
 	end
 
-	# FOR LATERRRR ################
-	# def +(m)
-	# 	pre_sparse_matrix_addition(m)
-	# 	post_sparse_matrix_addition(m)
-	# end
 
 
 	def +(m)
@@ -137,30 +157,26 @@ class SparseMatrix
 		@values_hash.each do |key, value|
 			result[key[0]][key[1]] = yield(values_hash[key],result[key[0]][key[1]])
 		end
+		# factory
 
-		begin
-			result=array_to_sparse(result)
-		rescue
-			return result
-		end
 
 		return result
 	end
 
 	#need to move this into calvin's class
-	def array_to_sparse(dense_m)
-		sparse_m=SparseMatrix.new
-		for i in 0..dense_m.getDimension[0]-1 do
-			for j in 0..dense_m.getDimension[0]-1 do
-
-				if dense_m[i][j]!=0
-					sparse_m.insert_at([i,j],dense_m[i][j])
-				end
-
-			end
-		end
-		return sparse_m
-	end
+	# def array_to_sparse(dense_m)
+	# 	sparse_m=SparseMatrix.new
+	# 	for i in 0..dense_m.getDimension[0]-1 do
+	# 		for j in 0..dense_m.getDimension[0]-1 do
+	#
+	# 			if dense_m[i][j]!=0
+	# 				sparse_m.insert_at([i,j],dense_m[i][j])
+	# 			end
+	#
+	# 		end
+	# 	end
+	# 	return sparse_m
+	# end
 	def get_array
 		result=Array.new(dimension[0]){Array.new(dimension[1],0)}
 		@values_hash.each do |key,value|
@@ -198,53 +214,27 @@ class SparseMatrix
 	def scalar_mult_div
 		result = @values_hash.dup
 		result.each do |key1, value1|
-			puts
 			result[key1] = yield(result[key1])
 		end
-		return SparseMatrix.new(*@dimension,result)
+		return SparseMatrix.new(*@dimension).init_Hash(result)
 	end
 
 
-
-	## NOT DONE
 	def sparse_matrix_multiplication(m)
-
-		for i in 0..dimension[0]-1 do
-			sum = 0
-			for j in 0..dimension[0]-1 do
-				v1=0;
-				v2=0;
-				begin
-					v1= @values_hash[[i,j]]
-				rescue
-					v2=m.getValues([])
-				rescue
-					next
-				end
-			end
-		end
-		return something
+		matrix_1=NDimensionalMatrix.new(self)
+		matrix_2=NDimensionalMatrix.new(m)
+		return @factory.create_matrix((matrix_1*matrix_2).get_array)
 	end
 
 	def det()
-		preDeterminant
-		
-		postDeterminant
+		NDimensionalMatrix.new(self).det
 	end
 
-	# def **(other)
-	# 	pre_power
-	# 	post_power
-	# end
 
-	# raises every element in the matrix to numbers power
-	def power(other)
-		pre_power(other)
-		# stuff
-		retval=SparseMatrix.new(@dimension)
-		post_power(other,retval)
+	def **(other)
+		matrix_1=NDimensionalMatrix.new(self)
+		matrix_1=matrix_1**other
 	end
-
 
 	def transpose()
 		preTranspose
@@ -261,8 +251,10 @@ class SparseMatrix
 	end
 
 	def inverse(m)
-		preInverse
-		postInverse
+		# preInverse
+		matrix_1=NDimensionalMatrix.new(self)
+		return matrix_1.inv
+		# postInverse
 	end
 
 	def scalar_addition(other)
@@ -383,3 +375,4 @@ result = b+b
 # # h[[0,1]]=2
 # # a= SparseMatrix.new(3,3,h)
 # # puts a.getDimension
+
