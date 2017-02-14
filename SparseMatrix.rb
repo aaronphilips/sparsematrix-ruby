@@ -236,18 +236,26 @@ class SparseMatrix
 	end
 
 	def det()
-		NDimensionalMatrix.new(self).det
+		preDeterminant
+		matrix_1 = NDimensionalMatrix.new(self)
+		result = matrix_1.det
+		postDeterminant(result)
+		return result
 	end
 
 	def **(other)
+		pre_power(other)
 		matrix_1=NDimensionalMatrix.new(self)
 		matrix_1=matrix_1**other
+		puts matrix_1.class
+		post_power(matrix_1)
+		return matrix_1
 	end
 
 	def transpose()
 		preTranspose
 
-		*args = self.getDimension
+		*args = self.getDimension.reverse
 		result = SparseMatrix.new(*args)
 		self.getValues.each do |key,value|
 			result.insert_at(key.reverse,value)
