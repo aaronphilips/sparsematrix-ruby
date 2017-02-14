@@ -74,13 +74,6 @@ class NDimensionalMatrix
 			@dimension=*rest_of_args
 	end
 
-
-
-
-
-
-
-
 	def recursive_nest_array(*args,value)
 		arg1,*rest = args
 		Array.new(arg1){rest.empty? ? value: recursive_nest_array(*rest,value)}
