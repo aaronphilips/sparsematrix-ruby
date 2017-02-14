@@ -100,7 +100,7 @@ class NDimensionalMatrix
 
 	def invariants()
 		assert(size >= 1,"not a valid matrix dimension")
-		assert (self.is_a? DenseMatrix), "It is not a Dense matrix whoops"
+		assert (self.respond_to? (:checkSum)), "It is not a Dense matrix whoops"
 	end
 
 	# we also cannot insert zeros as they are implied to be there.
@@ -132,16 +132,19 @@ class NDimensionalMatrix
 	end
 
 	def checkSum
-		return @arr.flatten.inject(:+)
+		preCheckSum(@arr)
+		result = @arr.flatten.inject(:+)
+		postCheckSum(result)
+		return result
 	end
 
 	def preCheckSum(matrix)
-		assert(matrix.respond_to? (:getValues))
+		assert(matrix.respond_to? (:flatten), 'not checking sum of array')
 		invariants
 	end
 
 	def postCheckSum(sum)
-		assert sum.respond_to? (:round)
+		assert sum.respond_to? (:round), 'not returning a value as check sum'
 		invariants
 	end
 

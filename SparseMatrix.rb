@@ -1,10 +1,9 @@
 require 'matrix'
 require 'pp'
 require 'test/unit'
-require_relative 'DenseMatrix'
 require_relative 'SparseMatrixPrePost'
 require_relative 'NDimensionalMatrix'
-# require_relative 'MatrixFactory'
+require_relative 'MatrixFactory'
 class SparseMatrix
 	attr_accessor :dimension, :values_hash
 	include Test::Unit::Assertions
@@ -50,7 +49,7 @@ class SparseMatrix
 
 	def init_array(arg)
 		#NEED assert_respond_to
-		puts "got to array"
+		# puts "got to array"
 		@values_hash = Hash.new
 		@dimension[0].times do |i|
 			@dimension[1].times do |j|
@@ -123,7 +122,7 @@ class SparseMatrix
 
 
 	def +(m)
-		if m.respond_to?(:sparse_matrix_add_sub)
+		if m.respond_to?(:checkSum)
 			pre_sparse_matrix_addition(m)
 			result = self.sparse_matrix_add_sub(m){|v1,v2| v1+v2}
 			post_sparse_matrix_addition(m,result)
@@ -132,29 +131,30 @@ class SparseMatrix
 			result = self.scalar_add_sub(m){|v1| v1 + m}
 			post_scalar_addition(m,result){|other, original| original.checkSum{|sum, value| sum+value} + (original.size * other)}
 		end
+		result
 	end
 
 	def -(m)
-		if m.respond_to?(:sparse_matrix_add_sub)
-			pre_sparse_matrix_subtraction
+		if m.respond_to?(:checkSum)
+			pre_sparse_matrix_subtraction(m)
 			result = self.sparse_matrix_add_sub(m){|v1,v2| v1-v2}
-			post_sparse_matrix_subtraction
+			post_sparse_matrix_subtraction(m, result)
 		else
-			pre_scalar_subtraction
+			pre_scalar_subtraction(m)
 			result = self.scalar_add_sub(-m){|v1| v1 - m}
-			post_scalar_subtraction
+			post_scalar_subtraction(m, result){|other, original| original.checkSum{|sum, value| sum+value} - (original.size * other)}
 		end
-		
+		result
 	end
 
 	def sparse_matrix_add_sub(m)
-		result=m.get_array
-		@values_hash.each do |key, value|
-			result[key[0]][key[1]] = yield(values_hash[key],result[key[0]][key[1]])
+		result=m.get_array.map{|values| values.clone}
+		self.getValues.each do |key, value|
+			puts "#{value} + #{result[key[0]][key[1]]}"
+			result[key[0]][key[1]] = yield(value,result[key[0]][key[1]])
 		end
 		# factory
-
-
+		result = @factory.create_matrix(result) 
 		return result
 	end
 
@@ -174,7 +174,7 @@ class SparseMatrix
 	# end
 	def get_array
 		result=Array.new(dimension[0]){Array.new(dimension[1],0)}
-		@values_hash.each do |key,value|
+		self.getValues.each do |key,value|
 			result[key[0]][key[1]]=value
 		end
 		return result
@@ -191,7 +191,7 @@ class SparseMatrix
 
 	def *(m)
 
-		if m.respond_to?(:sparse_matrix_multiplication)
+		if m.respond_to?(:checkSum)
 			result = self.sparse_matrix_multiplication(m)
 		else
 			result = self.scalar_mult_div{|v1| v1 * m}
@@ -199,7 +199,7 @@ class SparseMatrix
 	end
 
 	def /(m)
-		if m.respond_to?(:sparse_matrix_multiplication)
+		if m.respond_to?(:checkSum)
 			result = self.sparse_matrix_multiplication(inverse(m))
 		else
 			result = self.scalar_mult_div{|v1| v1 / m}
@@ -320,32 +320,32 @@ class SparseMatrix
 
 end
 
-b = SparseMatrix. new(2,2)
-b.insert_at([1,0],5)
-# b.to_s
-# puts b.checkSum{|sum, x| sum+x}
-#[0 0]
-#[5 0]
+# b = SparseMatrix. new(2,2)
+# b.insert_at([1,0],5)
+# # b.to_s
+# # puts b.checkSum{|sum, x| sum+x}
+# #[0 0]
+# #[5 0]
 
-c = DenseMatrix. new(3,3)
-c.insert_at([1,1],2)
-c.insert_at([0,0],0)
-c.insert_at([0,1],0)
-c.insert_at([1,0],1)
-#[0 0 0]
-#[1 2 0]
-#[0 0 0]
+# c = DenseMatrix. new(3,3)
+# c.insert_at([1,1],2)
+# c.insert_at([0,0],0)
+# c.insert_at([0,1],0)
+# c.insert_at([1,0],1)
+# #[0 0 0]
+# #[1 2 0]
+# #[0 0 0]
 
-a = DenseMatrix. new(2,3)
-a.insert_at([1,1],10)
-a.insert_at([0,0],0)
-a.insert_at([0,1],0)
-a.insert_at([1,0],5)
+# a = DenseMatrix. new(2,3)
+# a.insert_at([1,1],10)
+# a.insert_at([0,0],0)
+# a.insert_at([0,1],0)
+# a.insert_at([1,0],5)
 
-d= SparseMatrix. new(3,2)
-d.insert_at([2,1],5)
+# d= SparseMatrix. new(3,2)
+# d.insert_at([2,1],5)
 
-result = b+b
+# result = b+b
 
 # result = b.transpose
 # puts b.getValues
